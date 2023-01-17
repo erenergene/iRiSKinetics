@@ -1,6 +1,6 @@
 addpath(genpath(pwd))
 
-% function [Gamma1,Z1] = multidiels(n,L,lambda,theta,pol)
+% function [Gamma1,Z1] = multidiel1(n,L,lambda,theta,pol)
 clearvars
 %%
 n = [n_Air(1,2);n_SiO2(1,2);n_Si(1,2)];
