@@ -91,9 +91,9 @@ tic
 for i = 1:numval
 fprintf("Now running %.0f\n",i)
 for j = 1:numval
-[Refmat1_air(i,j),Z1(i,j)] = multidiels([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_water(i,j),Z1(i,j)] = multidiels([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_sol(i,j),Z1(i,j)] = multidiels([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+[Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+[Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+[Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
 end
 end
 toc
