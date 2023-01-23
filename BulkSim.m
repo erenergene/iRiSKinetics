@@ -1,6 +1,6 @@
 clc;clear;close all;addpath(genpath(pwd))
 %%
-load("SimOutputs/RefSimData.mat")
+load("SimOutputs/RefSimData.mat","Refmat_air","lambda")
 
 %% For air
 
@@ -9,9 +9,9 @@ load("SimOutputs/RefSimData.mat")
 R_Si_air = Refmat_air(find(lambda==cw_r),find(L==0));
 R_T1_air = Refmat_air(find(lambda==cw_r),find(L==100):find(L==120));
 %%
-subtr = R_Si_air - R_T1_air;
-add = R_Si_air + R_T1_air;
-rat = subtr ./ add
+subtrair = R_Si_air - R_T1_air;
+addair = R_Si_air + R_T1_air;
+rat = subtrair ./ addair
 
 %% Display Ratio
 
