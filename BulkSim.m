@@ -28,7 +28,7 @@ Refmat1_bulk = [];
 Bulkn = linspace(1.33,1.35,21); % Refractive index from n = 1.33 to 1.35
 BulkL = linspace(100,120,201); % Thickness from 100 nm to 120 nm
 
-%% Get reflectance vals from n = 1.33 to 1.35 and silicon for red led
+%% Get reflectance vals from n = 1.33 to 1.35 and silicon for red single wavelength
 
 for i = 1:numel(Bulkn)
 [Refmat1Si_bulk(i),Z1(i)] = multidiel1([Bulkn(i);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
@@ -170,9 +170,8 @@ xlabel('ref index');ylabel('Ratio')
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
 saveas(figure(5),[pwd '/Figures/BulkSim/5RatBulktest.fig']);
 
+%% 
 %% LED Integrated Response
-
-
 
 load("Osram_Spec_Data_edited.mat") % get LEDs
 bluespectrum = Spec_DentalBlue_460nm; clear("Spec_DentalBlue_460nm")
@@ -184,8 +183,26 @@ intgreenspectrum = interp1(Osram_lambda,greenspectrum,lambda);
 intredspectrum = interp1(Osram_lambda,redspectrum,lambda);
 
 %%
-%% USE REFMAT FROM THIS SIM AS INPUT IN THE FUNCTION BELOW
-%%
+
+%% New reflectance calculation for LED integrated response
+
+tic
+
+for i = 1:numel(Bulkn)
+for j = 1:numel(lambda)
+fprintf("Now running ref index %.0f\n",i)
+fprintf("Now running lambda %.0f\n",j)
+
+[Refmat1_bulk_LEDint(i,j),Z1(i,j)] = multidiel1([Bulkn(i);n_Air(j,2);n_Si(j,2)],0,lambda(j));        
+
+% Calculates reflectance as a function of thickness L from 100 to 120 nm and refractive index n from 1.33 to 1.35 
+
+end
+end
+
+toc
+
+Refmat_bulk_LEDint = conj(Refmat1_bulk_LEDint).*Refmat1_bulk_LEDint; %Refmat_Bulk(n,L) 
 
 
 %% PLOT INTERPOLATED RGB SPECTRUMS
@@ -199,25 +216,32 @@ xlabel('lambda (nm)')
 ylabel('Relative Intensity')
 title("RGB Spectrum Data")
 saveas(figure(10),[pwd '/Figures/RefSim/10RGBSpecData.fig']);
+
 %%
-reflectivity_curve_0nm = Refmat_air(:,L==0); %Reflectivity curve at 0 nm (used below)
-%%
-for i = 1:numval
-Ref_spec_red = Refmat_air(i,find(L==0))'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
-Ref_spec_green = Refmat_air(i,find(L==0))'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
-Ref_spec_blue = Refmat_air(i,find(L==0))'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
+for i = 1:size(Refmat_bulk_LEDint,1)
+Ref_spec_red_bulk(i,:) = Refmat_bulk_LEDint(i,:).*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
+Ref_spec_green_bulk(i,:) = Refmat_bulk_LEDint(i,:).*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
+Ref_spec_blue_bulk(i,:) = Refmat_bulk_LEDint(i,:).*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
 end
 
 %% Plot RGB reflectivity curves for Si chip with no oxide (SiO2 thickness = 0 nm)
 figure(11)
 hold on
-plot(lambda,reflectivity_curve_0nm,'k-','LineWidth',2) %Reflectivity curve at 0 nm
+%% plot(lambda,reflectivity_curve_0nm,'k-','LineWidth',2) %Reflectivity curve at 0 nm
 plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
-plot(lambda,intgreenspectrum,'g','Linewidth',2) %Green spectrum before multiplication
+%%
 plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
-plot(lambda,Ref_spec_red,'r','Linewidth',2) %Red spectrum after multiplication
-plot(lambda,Ref_spec_green,'g','Linewidth',2) %Green spectrum after multiplication
-plot(lambda,Ref_spec_blue,'b','Linewidth',2) %Blue spectrum after multiplication
+%%
+plot(lambda,Ref_spec_red_bulk(1,:),'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(1,:),'b','Linewidth',2) %Blue spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(6,:),'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(6,:),'b','Linewidth',2) %Blue spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(11,:),'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(11,:),'b','Linewidth',2) %Blue spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(16,:),'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(16,:),'b','Linewidth',2) %Blue spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(21,:),'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(21,:),'b','Linewidth',2) %Blue spectrum after multiplication
 xlim([400 700])
 ylim([0 1.3])
 xlabel('Wavelength (nm)')
@@ -226,15 +250,17 @@ title('Reflectivity Curve for Silicon (no oxide)')
 legend('Reflectivity Curve for Silicon (0 nm)','Red Spectrum and I_O_u_t','Green Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
 saveas(figure(11),[pwd '/Figures/RefSim/11SiRef.fig']);
 
+%% BURAYA KADAR OK
+
 %% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
-I_refred = []; %Reflected Intensity for red
-I_refgreen = []; %Reflected Intensity for green
-I_refblue = []; %Reflected Intensity for blue
-for i=1:numval
+I_refred_bulk = []; %Reflected Intensity for red
+I_refgreen_bulk = []; %Reflected Intensity for green
+I_refblue_bulk = []; %Reflected Intensity for blue
+for i=1:size(Refmat_bulk_LEDint,2)
    fprintf("Now running %.0f\n",i)
-   I_refred(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_red(2:end)');      
-   I_refgreen(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_green(2:end)');     
-   I_refblue(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_blue(2:end)');       
+   I_refred_bulk(:,i) = sum(Refmat_bulk_LEDint(2:end,i).*Ref_spec_red_bulk(2:end,i));      
+   I_refgreen_bulk(:,i) = sum(Refmat_bulk_LEDint(2:end,i).*Ref_spec_green_bulk(2:end,i));     
+   I_refblue_bulk(:,i) = sum(Refmat_bulk_LEDint(2:end,i).*Ref_spec_blue_bulk(2:end,i));       
 end
 %% Plot total reflected intensity for RGB
 figure(12)
