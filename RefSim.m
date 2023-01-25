@@ -341,7 +341,7 @@ Ref_at_120nm_G = Refmat_air(find(lambda == cw_g),find(L == 120));
 Ref_at_120nm_R = Refmat_air(find(lambda == cw_r),find(L == 120));
 
 %%
-save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air')
+save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air','I_refred','I_refgreen','I_refblue')
 %%
 save("SimOutputs/RefSimData")
 
