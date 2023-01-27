@@ -6,29 +6,31 @@ addpath(genpath(pwd))
 load("RefSimData.mat") %%CHANGE LOCATION - MOVE BELOW
 
 %% START NEW IMAGE LOAD
+%%
+
 
 dirfold = uigetdir("pwd","Select Folder for RGB Images"); %%CHANGE HERE TO BE ALL/IMAGES - CHANGE PYTHON TOO
-dispdir = extractAfter(dirfold,"C:\Tepegoz\iRiS_Kinetics_Github\experiments\Images\")
-disp(['User selected ', dispdir]);
+[filepath,name,ext] = fileparts(dirfold);
+disp(['User selected ', name]);
 
 %%
 
-preChip_no = extractAfter(dispdir,5)
-Chip_no = extractBefore(preChip_no,'_')
-preExposure = extractAfter(preChip_no,numel(Chip_no)+1)
-Exposure = extractBefore(preExposure,'ms')
-preFPS = extractAfter(preExposure,numel(Exposure)+3)
-FPS = extractBefore(preFPS,'FPS')
-preImgCount = extractAfter(preFPS,numel(FPS)+4)
-ImgCount = extractBefore(preImgCount,'IMG')
-Camera = extractAfter(preImgCount,numel(ImgCount)+4)
+% preChip_no = extractAfter(name,5)
+% Chip_no = extractBefore(preChip_no,'_')
+% preExposure = extractAfter(preChip_no,numel(Chip_no)+1)
+% Exposure = extractBefore(preExposure,'ms')
+% preFPS = extractAfter(preExposure,numel(Exposure)+3)
+% FPS = extractBefore(preFPS,'FPS')
+% preImgCount = extractAfter(preFPS,numel(FPS)+4)
+% ImgCount = extractBefore(preImgCount,'IMG')
+% Camera = extractAfter(preImgCount,numel(ImgCount)+4)
 %%
-dirbefore = extractBefore(dirfold,'_CHIP')
-dirafter = extractAfter(dirfold,'Images\_')
+% dirbefore = extractBefore(dirfold,'_CHIP')
+% dirafter = extractAfter(dirfold,'Images\_')
 %%
-dirB = append(dirfold,'\B_',dirafter)
-dirG = append(dirfold,'\G_',dirafter)
-dirR = append(dirfold,'\R_',dirafter)
+dirB = append(filepath,'\',name,'\B_',name)
+dirG = append(filepath,'\',name,'\G_',name)
+dirR = append(filepath,'\',name,'\R_',name)
 %%
 % dirB1 = uigetdir("C:\Tepegoz\iRiS_Kinetics_Github\experiments\Images","Select Folder for Blue Images");
 % disp(['User selected ', extractAfter(dirB1,"C:\Tepegoz\iRiS_Kinetics_Github\experiments\Images\")]);
@@ -168,10 +170,10 @@ Spot_no = SelectSpot(tiff_stack_R(:,:,1))
 
 %%
 
-foldername =  append('/experiments/results/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'_IMG',Camera,'_',notes);
-projectdir = 'C:\Tepegoz\iRiS_Kinetics_Github\experiments\Results';
-subfolder_name=char(append('/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'IMG_',Camera,'_',notes,'/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'IMG_',Camera,'_',notes));
-mkdir(fullfile(projectdir, subfolder_name));
+% foldername =  append('/experiments/results/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'_IMG',Camera,'_',notes);
+% projectdir = 'C:\Tepegoz\iRiS_Kinetics_Github\experiments\Results';
+% subfolder_name=char(append('/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'IMG_',Camera,'_',notes,'/CHIP',Chip_no,'_Spot',Spot_no,'_',Exposure,'ms_',FPS,'FPS_',ImgCount,'IMG_',Camera,'_',notes));
+% mkdir(fullfile(projectdir, subfolder_name));
 
 %% Display whole image and select ROI for spot
 
@@ -340,8 +342,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('raw mean data for silicon')
 im_name = char("_1_Raw_Data_Si");
-subsub = append(subfolder_name,im_name)
-saveas(figure(1),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(1),fullfile(projectdir, subsub));
 %%
 % FIX SAVING AT THE FOLDER TOMORROW
 
@@ -354,8 +356,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('raw mean data for silicon oxide')
 im_name = char("_2_Raw_Data_Ox");
-subsub = append(subfolder_name,im_name)
-saveas(figure(2),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(2),fullfile(projectdir, subsub));
 
 WinOnTop(figure(1))
 
@@ -429,8 +431,8 @@ colorbar
 caxis([min(min(nonzeros(thin_ring_R))) max(max(nonzeros(thin_ring_R)))]);
 title('R Ring ROI')
 im_name = char("_17_R_0nm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(17),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(17),fullfile(projectdir, subsub));
 
 figure(18)
 imagesc(thin_ring_G(:,:,1))
@@ -439,8 +441,8 @@ colorbar
 caxis([min(min(nonzeros(thin_ring_G))) max(max(nonzeros(thin_ring_G)))]);
 title('G Ring ROI')
 im_name = char("_18_G_0nm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(18),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(18),fullfile(projectdir, subsub));
 
 figure(19)
 imagesc(thin_ring_B(:,:,1))
@@ -449,8 +451,8 @@ colorbar
 caxis([double(min(min(nonzeros(thin_ring_B)))) double(max(max(nonzeros(thin_ring_B))))]);
 title('B Ring ROI')
 im_name = char("_19_B_0nm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(19),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(19),fullfile(projectdir, subsub));
 
 %% RAW INTENSITY WITH ELIMINATION LINES
 
@@ -469,8 +471,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon, vertical lines are to be eliminated')
 im_name = char("_3_Raw_Data_Si_Elims");
-subsub = append(subfolder_name,im_name)
-saveas(figure(3),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(3),fullfile(projectdir, subsub));
 %%
 figure(4)
 hold on
@@ -483,8 +485,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon Oxide, vertical lines are to be eliminated')
 im_name = char("_4_Raw_Data_Ox_Elims");
-subsub = append(subfolder_name,im_name)
-saveas(figure(4),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(4),fullfile(projectdir, subsub));
 %% NOT NORMALIZED AND FILTERED INTENSITY
 
 filtxaxis = 1:length(filtmeanB_Xnm);
@@ -498,8 +500,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon, outliers filtered out')
 im_name = char("_5_Si_Filt");
-subsub = append(subfolder_name,im_name)
-saveas(figure(5),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(5),fullfile(projectdir, subsub));
 %%
 figure(6)
 hold on
@@ -510,8 +512,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon Oxide outliers filtered out')
 im_name = char("_6_Ox_Filt");
-subsub = append(subfolder_name,im_name)
-saveas(figure(6),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(6),fullfile(projectdir, subsub));
 
 %% Normalize Intensity v Time and display (Normalized Filtered Average)
 
@@ -537,8 +539,8 @@ xlabel('# images')
 ylabel('normalized intensity')
 title('Silicon, outliers filtered out')
 im_name = char("_7_Si_Filt_Norm");
-subsub = append(subfolder_name,im_name)
-saveas(figure(7),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(7),fullfile(projectdir, subsub));
 
 %%
 figure(8)
@@ -553,8 +555,8 @@ xlabel('# images')
 ylabel('normalized intensity')
 title('Silicon Oxide, outliers filtered out')
 im_name = char("_8_Ox_Filt_Norm");
-subsub = append(subfolder_name,im_name)
-saveas(figure(8),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(8),fullfile(projectdir, subsub));
 
 %%
 percentflucR_0nm = max(normfiltR_0nm) - min(normfiltR_0nm);
@@ -622,8 +624,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon, outliers filtered out')
 im_name = char("_9_Si_Filt_TempAvg");
-subsub = append(subfolder_name,im_name)
-saveas(figure(9),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(9),fullfile(projectdir, subsub));
 
 %%
 
@@ -638,8 +640,8 @@ xlabel('# images')
 ylabel('not normalized intensity')
 title('Silicon Oxide, outliers filtered out')
 im_name = char("_10_Ox_Filt_TempAvg");
-subsub = append(subfolder_name,im_name)
-saveas(figure(10),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(10),fullfile(projectdir, subsub));
 
 %% NORMALIZED AND FILTERED TEMPORAL AVERAGE WITH STEPSIZE
 
@@ -667,8 +669,8 @@ xlabel('# images')
 ylabel('normalized intensity')
 title('Silicon, outliers filtered out')
 im_name = char("_11_Si_Filt_Norm_Tempavg");
-subsub = append(subfolder_name,im_name)
-saveas(figure(11),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(11),fullfile(projectdir, subsub));
 %%
 figure(12)
 hold on
@@ -681,8 +683,8 @@ xlabel('# images')
 ylabel('normalized intensity')
 title('Silicon Oxide, outliers filtered out')
 im_name = char("_12_Ox_Filt_Norm_Tempavg");
-subsub = append(subfolder_name,im_name)
-saveas(figure(12),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(12),fullfile(projectdir, subsub));
 %%
 
 
@@ -786,8 +788,8 @@ legend('Ref at R','Ref at G','Ref at B','B Curves', 'G Curves', 'R Curves','loca
 title("Actual Thickness is " + theoric_L + " nm, Estimated Thickness is " + esti_L + " nm")
 
 im_name = char("_13_L_Calc");
-subsub = append(subfolder_name,im_name)
-saveas(figure(13),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(13),fullfile(projectdir, subsub));
 
 if isnumeric(theoric_L)
 percent_error = 100*((abs(esti_L-theoric_L))/theoric_L);
@@ -810,8 +812,8 @@ colorbar
 caxis([min(min(nonzeros(cropped_im_R_Xnm))) max(max(nonzeros(cropped_im_R_Xnm)))]);
 title('Cropped R Xnm ROI')
 im_name = char("_14_R_Xnm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(14),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(14),fullfile(projectdir, subsub));
 
 figure(15)
 imagesc(cropped_im_G_Xnm(:,:,1))
@@ -820,8 +822,8 @@ colorbar
 caxis([min(min(nonzeros(cropped_im_G_Xnm))) max(max(nonzeros(cropped_im_G_Xnm)))]);
 title('Cropped G Xnm ROI')
 im_name = char("_15_G_Xnm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(15),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(15),fullfile(projectdir, subsub));
 
 figure(16)
 imagesc(cropped_im_B_Xnm(:,:,1))
@@ -830,8 +832,8 @@ colorbar
 caxis([min(min(nonzeros(cropped_im_B_Xnm))) max(max(nonzeros(cropped_im_B_Xnm)))]);
 title('Cropped B Xnm ROI')
 im_name = char("_16_B_Xnm_ROI");
-subsub = append(subfolder_name,im_name)
-saveas(figure(16),fullfile(projectdir, subsub));
+% subsub = append(subfolder_name,im_name)
+% saveas(figure(16),fullfile(projectdir, subsub));
 
 %% UN/COMMENT ENDS
 
@@ -842,7 +844,7 @@ saveas(figure(16),fullfile(projectdir, subsub));
 %% UN/COMMENT ENDS
 
 
-close all
+% close all
 
 %%
 toc
