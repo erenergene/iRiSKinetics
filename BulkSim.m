@@ -242,6 +242,7 @@ subbulktest = RefmatSitest_bulk - Refmattest_bulk; % Subtract T1 oxide reflectan
 addbulktest = RefmatSitest_bulk + Refmattest_bulk; % Add T1 oxide reflectance and Silicon reflectance
 ratbulktest = subbulktest ./ addbulktest; % Ratio
 %% 
+
 figure(5)
 hold on
 plot(ntest,ratbulktest(:,find(BulkL==100)),'LineWidth',2)
@@ -251,8 +252,23 @@ plot(ntest,ratbulktest(:,find(BulkL==115)),'LineWidth',2)
 plot(ntest,ratbulktest(:,find(BulkL==120)),'LineWidth',2)
 legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Ratio')
+xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
-saveas(figure(5),[pwd '/Figures/BulkSim/5RatBulktest.fig']);
+saveas(figure(5),[pwd '/Figures/BulkSim/5RatBulktestclose.fig']);
+
+%%
+
+figure(6)
+hold on
+plot(ntest,ratbulktest(:,find(BulkL==100)),'LineWidth',2)
+plot(ntest,ratbulktest(:,find(BulkL==105)),'LineWidth',2)
+plot(ntest,ratbulktest(:,find(BulkL==110)),'LineWidth',2)
+plot(ntest,ratbulktest(:,find(BulkL==115)),'LineWidth',2)
+plot(ntest,ratbulktest(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
+saveas(figure(5),[pwd '/Figures/BulkSim/6RatBulktest.fig']);
 
 %% 
 %% LED Integrated Response
