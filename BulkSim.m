@@ -300,10 +300,49 @@ I_refblue_bulk = []; %Reflected Intensity for blue
 for i=1:size(Refmat_lam_L_n,2)
     for j = 1:numel(Bulkn)
     fprintf("Now running %.0f\n",i)
-    I_refred_bulk_red(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_red_bulk(j,2:end)');
+    I_refred_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_red_bulk(j,2:end)');
+    I_refgreen_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_green_bulk(j,2:end)');
+    I_refblue_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_blue_bulk(j,2:end)');
     end 
 end
 
+%%
+
+%% Plot total reflected intensity for RGB
+figure(8)
+hold on
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.33))/100,'b','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.33))/100,'r','LineWidth',2)
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.34))/100,'b--','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.34))/100,'r--','LineWidth',2)
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.35))/100,'b-.','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.35))/100,'r-.','LineWidth',2)
+title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm (for air)')
+legend('n = 1.33','n = 1.33','n = 1.34','n = 1.34','n = 1.35','n = 1.35')
+xlabel('L (\mum)','FontSize',16);
+ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PLOT AS A FUNCTION OF REF INDEX WITH DIFFERENT THICKNESSES (L = 100, 105,..., 120)%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
+
+%% NO NEED FOR THIS IN THIS CODE
+
+figure(13)
+I_tot = cat(3, I_refred, I_refgreen, I_refblue);
+I_totnorm = (I_tot./max(I_tot)).*255;
+for i = 1:6                               
+   I_totnorm = [I_totnorm; I_totnorm]; %Add to each other for visualization purposes
+end
+imtot = uint8(round(I_totnorm));
+imagesc(imtot)
+set(gca,'YDir','normal')
+ylim([1,30])
+title('Simulated Color Si-SiO_2')
+xlabel('Thickness')
+xticks([find(L==0) find(L==50) find(L==100) find(L==150) find(L==200) find(L==250) find(L==300)])
+xticklabels([0 50 100 150 200 25+0 300])
 
 %% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
 
