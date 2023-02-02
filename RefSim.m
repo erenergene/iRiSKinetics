@@ -84,23 +84,25 @@ saveas(figure(1),[pwd '/Figures/RefSim/1RefIndicesIntvsRaw.fig']);
 
 %% CALCULATE REFLECTANCE VALUES
 
-Z1_air = [];
-Refmat1_air = [];
+% Z1_air = [];
+% Refmat1_air = [];
+% 
+% tic
+% for i = 1:numel(lambda)
+% fprintf("Now running %.0f\n",i)
+% for j = 1:numel(L)
+% [Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% [Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% [Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% end
+% end
+% toc
+% 
+% Refmat_air = conj(Refmat1_air).*Refmat1_air;                
+% Refmat_water = conj(Refmat1_water).*Refmat1_water;             %Multiply Gamma with conjugate to get rid of imaginary component
+% Refmat_sol = conj(Refmat1_sol).*Refmat1_sol;
 
-tic
-for i = 1:numel(lambda)
-fprintf("Now running %.0f\n",i)
-for j = 1:numel(L)
-[Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-end
-end
-toc
-
-Refmat_air = conj(Refmat1_air).*Refmat1_air;                
-Refmat_water = conj(Refmat1_water).*Refmat1_water;             %Multiply Gamma with conjugate to get rid of imaginary component
-Refmat_sol = conj(Refmat1_sol).*Refmat1_sol;
+load('Refmat.mat') %For Faster Code
 
 %% DISPLAY REFLECTANCE MATRIX UNDER AIR (n=1)
 
@@ -258,18 +260,18 @@ ylabel('Relative Intensity')
 title("RGB Spectrum Data")
 saveas(figure(10),[pwd '/Figures/RefSim/10RGBSpecData.fig']);
 %%
-reflectivity_curve_0nm = Refmat_air(:,L==0); %Reflectivity curve at 0 nm (used below)
+refcurve0nm = Refmat_air(:,L==0); %Reflectivity curve at 0 nm (used below)
 %%
 for i = 1:numval
-Ref_spec_red = Refmat_air(i,find(L==0))'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
-Ref_spec_green = Refmat_air(i,find(L==0))'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
-Ref_spec_blue = Refmat_air(i,find(L==0))'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
+Ref_spec_red = refcurve0nm(i)'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
+Ref_spec_green = refcurve0nm(i)'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
+Ref_spec_blue = refcurve0nm(i)'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
 end
 
 %% Plot RGB reflectivity curves for Si chip with no oxide (SiO2 thickness = 0 nm)
 figure(11)
 hold on
-plot(lambda,reflectivity_curve_0nm,'k-','LineWidth',2) %Reflectivity curve at 0 nm
+plot(lambda,refcurve0nm,'k-','LineWidth',2) %Reflectivity curve at 0 nm
 plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
 plot(lambda,intgreenspectrum,'g','Linewidth',2) %Green spectrum before multiplication
 plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
@@ -294,13 +296,14 @@ for i=1:numval
    I_refgreen(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_green(2:end)');     
    I_refblue(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_blue(2:end)');       
 end
+
 %% Plot total reflected intensity for RGB
 figure(12)
 hold on
 plot(L,I_refblue/100,'b','LineWidth',2)
 plot(L,I_refgreen/100,'g','LineWidth',2)
 plot(L,I_refred/100,'r','LineWidth',2)
-title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm')
+title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm (for air)')
 legend('Blue','Green','Red')
 xlabel('L (\mum)','FontSize',16);
 ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
@@ -325,7 +328,7 @@ saveas(figure(13),[pwd '/Figures/RefSim/13SimColor.fig']);
 
 %%
 
-%% Variables needed for thuckness calc
+%% Variables needed for thickness calc
 Ref_Si= abs((n_Air(:,2) - n_Si(:,2).^2)./ (n_Air(:,2) + n_Si(:,2).^2)).^2 ;
 %%
 Refmat_B = Refmat_air/Ref_Si(find(lambda == cw_b));
@@ -350,6 +353,7 @@ save("SimOutputs/RefSimData")
 % im_120 = imtot(:,find(L==120),:);
 % for i = 1:6
 %    im_120 = [im_120 im_120];
+%% 
 % end
 % imagesc(im_120)
 
@@ -357,6 +361,169 @@ save("SimOutputs/RefSimData")
 %ALL2
 %JAN11NIGHT
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SIMULATE FOR WATER (BULK EFFECT REFERENCE)
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+refcurve0nm_water = Refmat_water(:,L==0); %Reflectivity curve at 0 nm (used below)
+%%
+
+for i = 1:numval
+Ref_spec_red_water = refcurve0nm_water(i)'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
+Ref_spec_green_water = refcurve0nm_water(i)'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
+Ref_spec_blue_water = refcurve0nm_water(i)'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
+end
+
+%% Plot RGB reflectivity curves for Si chip with no oxide (SiO2 thickness = 0 nm)
+figure(16)
+hold on
+plot(lambda,refcurve0nm_water,'k-','LineWidth',2) %Reflectivity curve at 0 nm
+plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
+plot(lambda,intgreenspectrum,'g','Linewidth',2) %Green spectrum before multiplication
+plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
+plot(lambda,Ref_spec_red_water,'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_green_water,'g','Linewidth',2) %Green spectrum after multiplication
+plot(lambda,Ref_spec_blue_water,'b','Linewidth',2) %Blue spectrum after multiplication
+xlim([400 700])
+ylim([0 1.3])
+xlabel('Wavelength (nm)')
+ylabel('Reflectivity')
+title('Reflectivity Curve for Silicon (no oxide)')
+legend('Reflectivity Curve for Silicon (0 nm)','Red Spectrum and I_O_u_t','Green Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
 
 
+%% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
+I_refred_water = []; %Reflected Intensity for red
+I_refgreen_water = []; %Reflected Intensity for green
+I_refblue_water = []; %Reflected Intensity for blue
+for i=1:numval
+   fprintf("Now running %.0f\n",i)
+   I_refred_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_red_water(2:end)');      
+   I_refgreen_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_green_water(2:end)');     
+   I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
+end
 
+%% Plot total reflected intensity for RGB
+figure(17)
+hold on
+plot(L,I_refblue_water/100,'b','LineWidth',2)
+plot(L,I_refgreen_water/100,'g','LineWidth',2)
+plot(L,I_refred_water/100,'r','LineWidth',2)
+title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm (for air)')
+legend('Blue','Green','Red')
+xlabel('L (\mum)','FontSize',16);
+ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
+
+%% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
+figure(18)
+I_tot_water = cat(3, I_refred_water, I_refgreen_water, I_refblue_water);
+I_totnorm_water = (I_tot_water./max(I_tot_water)).*255;
+for i = 1:6                               
+   I_totnorm_water = [I_totnorm_water; I_totnorm_water]; %Add to each other for visualization purposes
+end
+imtot_water = uint8(round(I_totnorm_water));
+imagesc(imtot_water)
+set(gca,'YDir','normal')
+ylim([1,30])
+title('Simulated Color Si-SiO_2')
+xlabel('Thickness')
+xticks([find(L==0) find(L==50) find(L==100) find(L==150) find(L==200) find(L==250) find(L==300)])
+xticklabels([0 50 100 150 200 25+0 300])
+
+%%
+
+I_refred_water = []; %Reflected Intensity for red
+I_refgreen_water = []; %Reflected Intensity for green
+I_refblue_water = []; %Reflected Intensity for blue
+for i=1:numval
+   fprintf("Now running %.0f\n",i)
+   I_refred_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_red_water(2:end)');      
+   I_refgreen_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_green_water(2:end)');     
+   I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SIMULATE FOR SOL (BULK EFFECT REFERENCE)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+refcurve0nm_sol = Refmat_sol(:,L==0); %Reflectivity curve at 0 nm (used below)
+%%
+
+for i = 1:numval
+Ref_spec_red_sol = refcurve0nm_sol(i)'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
+Ref_spec_green_sol= refcurve0nm_sol(i)'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
+Ref_spec_blue_sol = refcurve0nm_sol(i)'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
+end
+
+%% Plot RGB reflectivity curves for Si chip with no oxide (SiO2 thickness = 0 nm)
+figure(20)
+hold on
+plot(lambda,refcurve0nm_sol,'k-','LineWidth',2) %Reflectivity curve at 0 nm
+plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
+plot(lambda,intgreenspectrum,'g','Linewidth',2) %Green spectrum before multiplication
+plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
+plot(lambda,Ref_spec_red_sol,'r','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_green_sol,'g','Linewidth',2) %Green spectrum after multiplication
+plot(lambda,Ref_spec_blue_sol,'b','Linewidth',2) %Blue spectrum after multiplication
+xlim([400 700])
+ylim([0 1.3])
+xlabel('Wavelength (nm)')
+ylabel('Reflectivity')
+title('Reflectivity Curve for Silicon (no oxide)')
+legend('Reflectivity Curve for Silicon (0 nm)','Red Spectrum and I_O_u_t','Green Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
+
+
+%% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
+I_refred_sol = []; %Reflected Intensity for red
+I_refgreen_sol = []; %Reflected Intensity for green
+I_refblue_sol = []; %Reflected Intensity for blue
+for i=1:numval
+   fprintf("Now running %.0f\n",i)
+   I_refred_sol(:,i) = sum(Refmat_sol(2:end,i).*Ref_spec_red_sol(2:end)');      
+   I_refgreen_sol(:,i) = sum(Refmat_sol(2:end,i).*Ref_spec_green_sol(2:end)');     
+   I_refblue_sol(:,i) = sum(Refmat_sol(2:end,i).*Ref_spec_blue_sol(2:end)');       
+end
+
+%% Plot total reflected intensity for RGB
+figure(21)
+hold on
+plot(L,I_refblue_sol/100,'b','LineWidth',2)
+plot(L,I_refgreen_sol/100,'g','LineWidth',2)
+plot(L,I_refred_sol/100,'r','LineWidth',2)
+title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm (for air)')
+legend('Blue','Green','Red')
+xlabel('L (\mum)','FontSize',16);
+ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
+
+%% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
+figure(22)
+I_tot_water = cat(3, I_refred_sol, I_refgreen_sol, I_refblue_sol);
+I_totnorm_sol = (I_tot_sol./max(I_tot_sol)).*255;
+for i = 1:6                               
+   I_totnorm_sol = [I_totnorm_sol; I_totnorm_sol]; %Add to each other for visualization purposes
+end
+imtot_sol = uint8(round(I_totnorm_sol));
+imagesc(imtot_sol)
+set(gca,'YDir','normal')
+ylim([1,30])
+title('Simulated Color Si-SiO_2')
+xlabel('Thickness')
+xticks([find(L==0) find(L==50) find(L==100) find(L==150) find(L==200) find(L==250) find(L==300)])
+xticklabels([0 50 100 150 200 25+0 300])
+
+%%
+
+%%
+
+I_refred_water = []; %Reflected Intensity for red
+I_refgreen_water = []; %Reflected Intensity for green
+I_refblue_water = []; %Reflected Intensity for blue
+for i=1:numval
+   fprintf("Now running %.0f\n",i)
+   I_refred_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_red_water(2:end)');      
+   I_refgreen_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_green_water(2:end)');     
+   I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
+end
