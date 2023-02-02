@@ -415,7 +415,6 @@ title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm (for air)')
 legend('Blue','Green','Red')
 xlabel('L (\mum)','FontSize',16);
 ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
-
 %% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
 figure(18)
 I_tot_water = cat(3, I_refred_water, I_refgreen_water, I_refblue_water);
@@ -500,7 +499,7 @@ ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
 
 %% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
 figure(22)
-I_tot_water = cat(3, I_refred_sol, I_refgreen_sol, I_refblue_sol);
+I_tot_sol = cat(3, I_refred_sol, I_refgreen_sol, I_refblue_sol);
 I_totnorm_sol = (I_tot_sol./max(I_tot_sol)).*255;
 for i = 1:6                               
    I_totnorm_sol = [I_totnorm_sol; I_totnorm_sol]; %Add to each other for visualization purposes
@@ -527,3 +526,5 @@ for i=1:numval
    I_refgreen_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_green_water(2:end)');     
    I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
 end
+
+%FEB1TEST
