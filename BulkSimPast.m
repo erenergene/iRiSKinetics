@@ -370,6 +370,7 @@ end
 % plot(Bulkn (2: end) , slprat(:,find (BulkL==115)), 'LineWidth',2)
 % plot(Bulkn(2: end) , slprat(:, find (BulkL==120)), 'LineWidth', 2)
 
+%FEB1TEST
 
 
 

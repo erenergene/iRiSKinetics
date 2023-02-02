@@ -526,3 +526,5 @@ for i=1:numval
    I_refgreen_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_green_water(2:end)');     
    I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
 end
+
+%FEB1TEST
