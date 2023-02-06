@@ -343,11 +343,6 @@ Ref_at_120nm_B = Refmat_air(find(lambda == cw_b),find(L == 120));
 Ref_at_120nm_G = Refmat_air(find(lambda == cw_g),find(L == 120));
 Ref_at_120nm_R = Refmat_air(find(lambda == cw_r),find(L == 120));
 
-%%
-save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air','I_refred','I_refgreen','I_refblue')
-%%
-save("SimOutputs/RefSimData")
-
 %% Color for 120 nm
 % figure(14)
 % im_120 = imtot(:,find(L==120),:);
@@ -527,4 +522,9 @@ for i=1:numval
    I_refblue_water(:,i) = sum(Refmat_water(2:end,i).*Ref_spec_blue_water(2:end)');       
 end
 
-%FEB1TEST
+%%
+save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air','I_refred','I_refgreen','I_refblue')
+%%
+save("SimOutputs/RefSimData")
+%%
+fprintf("Done running %s\n", mfilename)
