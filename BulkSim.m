@@ -1,26 +1,39 @@
-% clc;clear;close all
+clc;clear;close all
 
 addpath(genpath(pwd))
-load("SimOutputs/RefSimtoBulkData.mat") % Loads variables needed for simulations
+load("SimOutputs/RefSimData.mat") % Loads variables needed for simulations
 
 %% Get R_Si and R_T1 for air
 
-R_Si_air = Refmat_air(find(lambda==cw_r),find(L==0)); % Reflectance at Si at air (n = 1.33)
-R_T1_air = Refmat_air(find(lambda==cw_r),find(L==100):find(L==120)); % Reflectance at T1 = 100 nm to 120 nm oxide at air (n = 1.33)
+R_Si_air_red = Refmat_air(find(lambda==cw_r),find(L==0)); % Reflectance at Si at air (n = 1.33)
+R_T1_air_red = Refmat_air(find(lambda==cw_r),find(L==100):find(L==120)); % Reflectance at T1 = 100 nm to 120 nm oxide at air (n = 1.33)
+R_Si_air_blue = Refmat_air(find(lambda==cw_b),find(L==0)); % Reflectance at Si at air (n = 1.33)
+R_T1_air_blue = Refmat_air(find(lambda==cw_b),find(L==100):find(L==120)); % Reflectance at T1 = 100 nm to 120 nm oxide at air (n = 1.33)
+R_Si_air_green = Refmat_air(find(lambda==cw_g),find(L==0)); % Reflectance at Si at air (n = 1.33)
+R_T1_air_green = Refmat_air(find(lambda==cw_g),find(L==100):find(L==120)); % Reflectance at T1 = 100 nm to 120 nm oxide at air (n = 1.33)
 
 %% Get ratio R_Si - R_T1 / R_Si + R_T1
 
-subtrair = R_Si_air - R_T1_air; % Subtract T1 oxide reflectance from Silicon reflectance
-addair = R_Si_air + R_T1_air; % Add T1 oxide reflectance and Silicon reflectance
-rat = subtrair ./ addair; % Ratio 
-
+subtrair_red = R_Si_air_red - R_T1_air_red; % Subtract T1 oxide reflectance from Silicon reflectance
+addair_red = R_Si_air_red + R_T1_air_red; % Add T1 oxide reflectance and Silicon reflectance
+rat_red = subtrair_red ./ addair_red; % Ratio 
+subtrair_blue = R_Si_air_blue - R_T1_air_blue; % Subtract T1 oxide reflectance from Silicon reflectance
+addair_blue = R_Si_air_blue + R_T1_air_blue; % Add T1 oxide reflectance and Silicon reflectance
+rat_blue = subtrair_blue ./ addair_blue; % Ratio 
+subtrair_green = R_Si_air_green - R_T1_air_green; % Subtract T1 oxide reflectance from Silicon reflectance
+addair_green = R_Si_air_green + R_T1_air_green; % Add T1 oxide reflectance and Silicon reflectance
+rat_green = subtrair_green ./ addair_green; % Ratio 
 %% Display Ratio as a function of thickness
 
 figure(1)
-plot(linspace(100,120,201),rat,'LineWidth',2)
+hold on
+plot(linspace(100,120,201),rat_red,'r','LineWidth',2)
+plot(linspace(100,120,201),rat_green,'g','LineWidth',2)
+plot(linspace(100,120,201),rat_blue,'b','LineWidth',2)
 xlabel('Thickness T1 (nm)'); ylabel('Ratio')
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (FOR AIR)')
 saveas(figure(1),[pwd '/Figures/BulkSim/1RatAir.fig']);
+
 
 %% Define n and L vars
 
@@ -68,11 +81,19 @@ Refmat_lamR_L0_n = conj(Refmat1_lamR_L0_n).*Refmat1_lamR_L0_n;
 
 %%
 
+for i = 1
+    for j = 1
+        for k = 1:numel(Bulkn)
+            [Refmat1_lamB_L0_n(i,j,k),Z_lamB_L0_n_1(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_b),2);n_Si(find(lambda==cw_b),2)],0,cw_b); 
+        end
+    end
+end
 
+Refmat_lamB_L0_n = conj(Refmat1_lamB_L0_n).*Refmat1_lamB_L0_n;
 
 %% Get reflectance vals from n = 1.33 to 1.35 and thickness 100 120 nm for red led
 
-%% Display reflectance for 5 different thickness from 100 to 120 nm for single wavelength lambda = 633 nm
+%% Display reflectance for 5 different thickness from 100 to 120 nm for red single wavelength lambda = 633 nm
 
 
 figure(2)
@@ -88,58 +109,107 @@ xlabel('ref index');ylabel('Reflectance')
 xlim([1.33 1.35])
 title('Reflectance')
 saveas(figure(2),[pwd '/Figures/BulkSim/2Refvs5L.fig']);
+
+%% %% Display reflectance for 5 different thickness from 100 to 120 nm for blue single wavelength lambda = 460 nm
+
+figure(3)
+hold on
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_b),find(BulkL==100),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_b),find(BulkL==105),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_b),find(BulkL==110),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_b),find(BulkL==115),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_b),find(BulkL==120),:),[1 numel(Bulkn)]),'LineWidth',2)
+
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Reflectance')
+xlim([1.33 1.35])
+title('Reflectance')
+saveas(figure(2),[pwd '/Figures/BulkSim/2Refvs5L.fig']);
+
 %%
 
 %% Get T0-T1
 
 %%
 Refmat_lamR_L0_n = reshape(Refmat_lamR_L0_n,[21 1]); % Reflectance at silicon and red sw for n from 1.33 to 1.35
+Refmat_lamB_L0_n = reshape(Refmat_lamB_L0_n,[21 1]);
 %%
 Refmat_lamR_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_r),:,:),[201 21])'; % Reflectance at oxide and red sw for n 1.33 to 1.35
+Refmat_lamB_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_b),:,:),[201 21])'; % Reflectance at oxide and red sw for n 1.33 to 1.35
 %%
-subtrSiT1 = Refmat_lamR_L0_n - Refmat_lamR_L_n;
-addSiT1 = Refmat_lamR_L0_n + Refmat_lamR_L_n;
-ratSiT1 = subtrSiT1 ./ addSiT1;
+subtrSiT1R = Refmat_lamR_L0_n - Refmat_lamR_L_n;
+addSiT1R = Refmat_lamR_L0_n + Refmat_lamR_L_n;
+ratSiT1R = subtrSiT1R ./ addSiT1R;
 %% 
-
+subtrSiT1B = Refmat_lamB_L0_n - Refmat_lamB_L_n;
+addSiT1B = Refmat_lamB_L0_n + Refmat_lamB_L_n;
+ratSiT1B = subtrSiT1B ./ addSiT1B;
 
 
 %% Display ratio R_Si - R_T1 / R_Si + R_T1 as a function of n from 1.33 to 1.35
 
 %%
 
-figure(3) 
+figure(4) 
 
 hold on
-plot(Bulkn,ratSiT1(:,find(BulkL==100)),'LineWidth',2)
-plot(Bulkn,ratSiT1(:,find(BulkL==105)),'LineWidth',2)
-plot(Bulkn,ratSiT1(:,find(BulkL==110)),'LineWidth',2)
-plot(Bulkn,ratSiT1(:,find(BulkL==115)),'LineWidth',2)
-plot(Bulkn,ratSiT1(:,find(BulkL==120)),'LineWidth',2)
+plot(Bulkn,ratSiT1R(:,find(BulkL==100)),'LineWidth',2)
+plot(Bulkn,ratSiT1R(:,find(BulkL==105)),'LineWidth',2)
+plot(Bulkn,ratSiT1R(:,find(BulkL==110)),'LineWidth',2)
+plot(Bulkn,ratSiT1R(:,find(BulkL==115)),'LineWidth',2)
+plot(Bulkn,ratSiT1R(:,find(BulkL==120)),'LineWidth',2)
 legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
-title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
-saveas(figure(3),[pwd '/Figures/BulkSim/3RatBulk.fig']);
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
+
+%% 
+
+figure(5) 
+
+hold on
+plot(Bulkn,ratSiT1B(:,find(BulkL==100)),'LineWidth',2)
+plot(Bulkn,ratSiT1B(:,find(BulkL==105)),'LineWidth',2)
+plot(Bulkn,ratSiT1B(:,find(BulkL==110)),'LineWidth',2)
+plot(Bulkn,ratSiT1B(:,find(BulkL==115)),'LineWidth',2)
+plot(Bulkn,ratSiT1B(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+xlim([1.33 1.35])
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
+
+
 
 
 %% Get and display slope of ratio for L from 100 to 120 nm
 
 for i = 1:numel(BulkL)
-    slprat(i) = (ratSiT1(end,i) - ratSiT1(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
+    slpratR(i) = (ratSiT1R(end,i) - ratSiT1R(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
 end
 
-
+for i = 1:numel(BulkL)
+    slpratB(i) = (ratSiT1B(end,i) - ratSiT1B(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
+end
 
 %% Display slope of ratio as a function of thickness
 
-figure(4)
+figure(6)
 hold on
-plot(BulkL,slprat,'LineWidth',2)
+plot(BulkL,slpratR,'LineWidth',2)
 xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
-title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1)')
-saveas(figure(4),[pwd '/Figures/BulkSim/4SlpRat.fig']);
+ylim([-1.29 -1.22])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
+
+
+figure(7)
+hold on
+plot(BulkL,slpratB,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+ylim([-0.85 -0.35])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
+
 
 %% Code to test n in a broader range (1 to 3)
 
@@ -182,7 +252,7 @@ ratbulknbroad = (subbulknbroad ./ addbulknbroad)'; % Ratio
 
 %%
 
-figure(5)
+figure(6)
 hold on
 plot(nbroad,ratbulknbroad(:,find(BulkL==100)),'LineWidth',2)
 plot(nbroad,ratbulknbroad(:,find(BulkL==105)),'LineWidth',2)
@@ -212,12 +282,12 @@ intredspectrum = interp1(Osram_lambda,redspectrum,lambda);
 
 tic
 
-for i = 1:numel(Bulkn)
-for j = 1:numel(lambda)
-fprintf("Now running ref index %.0f\n",i)
-fprintf("Now running lambda %.0f\n",j)
+for i = 1:numel(lambda)
+for j = 1:numel(Bulkn)
+fprintf("Now running lambda %.0f\n",i)
+fprintf("Now running ref index %.0f\n",j)
 
-[Refmat1_lam_L0_n(i,j),Z1(i,j)] = multidiel1([Bulkn(i);n_Si(j,2)],0,lambda(j));        
+[Refmat1_lam_L0_n(j,i),Z1(j,i)] = multidiel1([Bulkn(j);n_Si(i,2)],0,lambda(i));        
 
 % Calculates reflectance as a function of thickness L from 100 to 120 nm and refractive index n from 1.33 to 1.35 
 
@@ -231,7 +301,7 @@ Refmat_lam_L0_n = conj(Refmat1_lam_L0_n).*Refmat1_lam_L0_n; %Refmat_Bulk(n,L)
 
 %% PLOT INTERPOLATED RGB SPECTRUMS
 
-figure(6)
+figure(7)
 hold on
 plot(lambda,intbluespectrum,'b','LineWidth',2) 
 plot(lambda,intgreenspectrum,'g','LineWidth',2)
@@ -273,7 +343,7 @@ Ref_spec_blue_bulk = Ref_spec_blue_bulk';
 
 
 
-figure(7)
+figure(8)
 hold on
 
 plot(lambda,refcurve0nm_bulk(:,find(Bulkn==1.33)),'k','Linewidth',2); %Reflectivity curve at silicon at n = 1.33
@@ -295,10 +365,11 @@ saveas(figure(7),[pwd '/Figures/RefSim/7SiRef.fig']);
 %% CALCULATE AGAIN FROM BEGINNING
 
 Refmat_lam_L0_n = Refmat_lam_L0_n'
+%%
 I_refred_bulk_L0 = []
 I_refgreen_bulk_L0 = []
 I_refblue_bulk_L0 = []
-%%
+%
 I_refred_bulk = []; %Reflected Intensity for red
 I_refgreen_bulk = []; %Reflected Intensity for green
 I_refblue_bulk = []; %Reflected Intensity for blue
@@ -306,29 +377,31 @@ I_refblue_bulk = []; %Reflected Intensity for blue
 for i=1:size(Refmat_lam_L_n,2)
     for j = 1:numel(Bulkn)
     fprintf("Now running %.0f\n",i)
-    I_refred_bulk_L0(:,j) = sum(Refmat_lam_L0_n(2:end,j).*Ref_spec_red_bulk(j,2:end));
-    I_refred_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_red_bulk(j,2:end)');
-    I_refgreen_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_green_bulk(j,2:end)');
-    I_refblue_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_blue_bulk(j,2:end)');
+    I_refred_bulk_L0(:,j) = sum(Refmat_lam_L0_n(2:end,j).*Ref_spec_red_bulk(j,2:end)')./100;
+    I_refgreen_bulk_L0(:,j) = sum(Refmat_lam_L0_n(2:end,j).*Ref_spec_green_bulk(j,2:end)')./100;
+    I_refblue_bulk_L0(:,j) = sum(Refmat_lam_L0_n(2:end,j).*Ref_spec_blue_bulk(j,2:end)')./100;
+    I_refred_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_red_bulk(j,2:end)')./100;
+    I_refgreen_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_green_bulk(j,2:end)')./100;
+    I_refblue_bulk(:,i,j) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_blue_bulk(j,2:end)')./100;
     end 
 end
 
 %%
 
-hold on
-plot(Bulkn,I_refred_bulk_L0(1,:))
-plot(lambda(2:end),I_refred_bulk_L0(:,1))
+% hold on
+% plot(Bulkn,I_refred_bulk_L0(1,:))
+% plot(lambda(2:end),I_refred_bulk_L0(:,1))
 
 
 %% Plot total reflected intensity for RGB
-figure(8)
+figure(9)
 hold on
-plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.33))/100,'b','LineWidth',2)
-plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.33))/100,'r','LineWidth',2)
-plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.34))/100,'b--','LineWidth',2)
-plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.34))/100,'r--','LineWidth',2)
-plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.35))/100,'b-.','LineWidth',2)
-plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.35))/100,'r-.','LineWidth',2)
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.33)),'b','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.33)),'r','LineWidth',2)
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.34)),'b--','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.34)),'r--','LineWidth',2)
+plot(BulkL,I_refblue_bulk(:,:,find(Bulkn==1.35)),'b-.','LineWidth',2)
+plot(BulkL,I_refred_bulk(:,:,find(Bulkn==1.35)),'r-.','LineWidth',2)
 title('Reflected Intensity (I_O_u_t) for different refractive indices')
 legend('n = 1.33','n = 1.33','n = 1.34','n = 1.34','n = 1.35','n = 1.35')
 xlabel('L (\mum)','FontSize',16);
@@ -338,150 +411,118 @@ ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
 %% PLOT AS A FUNCTION OF REF INDEX WITH DIFFERENT THICKNESSES (L = 100, 105,..., 120)%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-I_refred_bulk_res = reshape(I_refred_bulk,201,21);
-I_refgreen_bulk_res = reshape(I_refgreen_bulk,201,21);
-I_refblue_bulk_res = reshape(I_refblue_bulk,201,21);
+I_refred_bulk = reshape(I_refred_bulk,201,21);
+I_refgreen_bulk = reshape(I_refgreen_bulk,201,21);
+I_refblue_bulk = reshape(I_refblue_bulk,201,21);
 
 %%
 
-figure(9)
+figure(10)
 hold on
-plot(Bulkn,I_refblue_bulk_res(find(BulkL == 100),:),'LineWidth',2)
-plot(Bulkn,I_refblue_bulk_res(find(BulkL == 105),:),'LineWidth',2)
-plot(Bulkn,I_refblue_bulk_res(find(BulkL == 110),:),'LineWidth',2)
-plot(Bulkn,I_refblue_bulk_res(find(BulkL == 115),:),'LineWidth',2)
-plot(Bulkn,I_refblue_bulk_res(find(BulkL == 120),:),'LineWidth',2)
+plot(Bulkn,I_refblue_bulk(find(BulkL == 100),:),'LineWidth',2)
+plot(Bulkn,I_refblue_bulk(find(BulkL == 105),:),'LineWidth',2)
+plot(Bulkn,I_refblue_bulk(find(BulkL == 110),:),'LineWidth',2)
+plot(Bulkn,I_refblue_bulk(find(BulkL == 115),:),'LineWidth',2)
+plot(Bulkn,I_refblue_bulk(find(BulkL == 120),:),'LineWidth',2)
 xlim([1.33 1.35])
 legend('L=100','L=105','L=110','L=115','L=120')
 title("Reflected Intensity for blue")
 %%
-figure(10)
+figure(11)
 hold on
-plot(Bulkn,I_refred_bulk_res(find(BulkL == 100),:),'LineWidth',2)
-plot(Bulkn,I_refred_bulk_res(find(BulkL == 105),:),'LineWidth',2)
-plot(Bulkn,I_refred_bulk_res(find(BulkL == 110),:),'LineWidth',2)
-plot(Bulkn,I_refred_bulk_res(find(BulkL == 115),:),'LineWidth',2)
-plot(Bulkn,I_refred_bulk_res(find(BulkL == 120),:),'LineWidth',2)
+plot(Bulkn,I_refred_bulk(find(BulkL == 100),:),'LineWidth',2)
+plot(Bulkn,I_refred_bulk(find(BulkL == 105),:),'LineWidth',2)
+plot(Bulkn,I_refred_bulk(find(BulkL == 110),:),'LineWidth',2)
+plot(Bulkn,I_refred_bulk(find(BulkL == 115),:),'LineWidth',2)
+plot(Bulkn,I_refred_bulk(find(BulkL == 120),:),'LineWidth',2)
 xlim([1.33 1.35])
 legend('L=100','L=105','L=110','L=115','L=120')
 title("Reflected Intensity for red")
-%%
 
+%% Get ratio
 
+subtrSiT1bulkR = (I_refred_bulk_L0 - I_refred_bulk)' ;
+addSiT1bulkR = (I_refred_bulk_L0 + I_refred_bulk)'; 
+subtrSiT1bulkB = (I_refblue_bulk_L0 - I_refblue_bulk)' ;
+addSiT1bulkB = (I_refblue_bulk_L0 + I_refblue_bulk)';
 
+ratSiT1bulkR = subtrSiT1bulkR ./ addSiT1bulkR;
+ratSiT1bulkB = subtrSiT1bulkB ./ addSiT1bulkB;
+%% 
 
-%% Display simulated color for 0-300 nm by comparing RGB reflected intensity values
+figure(14) 
 
-%% NO NEED FOR THIS IN THIS CODE
+hold on
+plot(Bulkn,ratSiT1bulkR(:,find(BulkL==100)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkR(:,find(BulkL==105)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkR(:,find(BulkL==110)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkR(:,find(BulkL==115)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkR(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+xlim([1.33 1.35])
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
 
-% figure(13)
-% I_tot = cat(3, I_refred, I_refgreen, I_refblue);
-% I_totnorm = (I_tot./max(I_tot)).*255;
-% for i = 1:6                               
-%    I_totnorm = [I_totnorm; I_totnorm]; %Add to each other for visualization purposes
-% end
-% imtot = uint8(round(I_totnorm));
-% imagesc(imtot)
-% set(gca,'YDir','normal')
-% ylim([1,30])
-% title('Simulated Color Si-SiO_2')
-% xlabel('Thickness')
-% xticks([find(L==0) find(L==50) find(L==100) find(L==150) find(L==200) find(L==250) find(L==300)])
-% xticklabels([0 50 100 150 200 25+0 300])
+%% 
 
-%% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
+figure(15) 
 
-% I_refred_bulk = []; %Reflected Intensity for red
-% I_refgreen_bulk = []; %Reflected Intensity for green
-% I_refblue_bulk = []; %Reflected Intensity for blue
-% 
-% %%
-% 
-% for i=1:numel(BulkL)
-%    fprintf("Now running %.0f\n",i)
-%    I_refred_133(:,i) = sum(Refmat_lam_L_n(2:end,i,1).*Ref_spec_red_bulk(1,2:end)');      
-%    I_refgreen_133(:,i) = sum(Refmat_lam_L_n(2:end,i,1).*Ref_spec_green_bulk(1,2:end)');         
-%    I_refblue_133(:,i) = sum(Refmat_lam_L_n(2:end,i,1).*Ref_spec_blue_bulk(1,2:end)');          
-% end
-% 
-% %%
-% 
-% for i=1:size(Refmat_lam_L_n,2)
-%     for j =1:numel(Bulkn)
-%        fprintf("Now running thickness %.0f and ref index %.0f \n",i,j)
-%        I_refred_bulk(j,i) = sum(2:end,i,j).*Ref_spec_red_bulk(j,2:end)';
-%        I_refgreen_bulk(j,i) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_green_bulk(j,2:end)';
-%        I_refblue_bulk(j,i) = sum(Refmat_lam_L_n(2:end,i,j).*Ref_spec_blue_bulk(j,2:end)';
-%      end
-% end
+hold on
+plot(Bulkn,ratSiT1bulkB(:,find(BulkL==100)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkB(:,find(BulkL==105)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkB(:,find(BulkL==110)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkB(:,find(BulkL==115)),'LineWidth',2)
+plot(Bulkn,ratSiT1bulkB(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+xlim([1.33 1.35])
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
 
-%% basdan basla
+%% Get and display slope of ratio for L from 100 to 120 nm
 
+for i = 1:numel(BulkL)
+    slpratbulkR(i) = (ratSiT1bulkR(end,i) - ratSiT1bulkR(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
+end
 
-
+for i = 1:numel(BulkL)
+    slpratbulkB(i) = (ratSiT1bulkB(end,i) - ratSiT1bulkB(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
+end
 
 %%
-    
+figure(16)
+hold on
+plot(BulkL,slpratbulkR,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
+ylim([-1.29 -1.22])
 
-%% Plot total reflected intensity for RGB
-% figure(12)
-% hold on
-% plot(L,I_refblue_bulk/100,'b','LineWidth',2)
-% plot(L,I_refgreen_bulk/100,'g','LineWidth',2)
-% plot(L,I_refred_bulk/100,'r','LineWidth',2)
-% title('Reflected Intensity (I_O_u_t) for RGB from 0 nm to 300 nm')
-% legend('Blue','Green','Red')
-% xlabel('L (\mum)','FontSize',16);
-% ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
-% saveas(figure(12),[pwd '/Figures/RefSim/12RefISiO2.fig']);
+figure(17)
+hold on
+plot(BulkL,slpratbulkB,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
+ylim([-0.85 -0.35])
 
+%% COMPARISON
 
+figure(18)
+hold on
+plot(BulkL,slpratbulkR,'LineWidth',2)
+plot(BulkL,slpratR,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R) difference between SW and LED int')
+ylim([-1.29 -1.22])
+legend('LED Int','Single Wavelength')
 
-
-
-% figure(4) 
-% 
-% hold on
-% plot(Bulkn(2:end),slprat(:,find(BulkL==100)),'LineWidth',2)
-% plot(Bulkn(2:end),slprat(:,find(BulkL==105)),'LineWidth',2)
-% plot(Bulkn(2:end),slprat(:,find(BulkL==110)),'LineWidth',2)
-% plot(Bulkn(2:end),slprat(:,find(BulkL==115)),'LineWidth',2)
-% plot(Bulkn(2:end),slprat(:,find(BulkL==120)),'LineWidth',2)
-% legend('L=100','L=105','L=110','L=115','L=120')
-% xlabel('ref index'); ylabel('Slope of Reflectance');
-% title ('Slope')
-
-
-
-%%
-% 
-% figure(5)
-% hold on
-% plot(BulkL, slprat (1, : ))
-% plot(BulkL, slprat (5, : ))
-% plot(BulkL, slprat (10, :) )
-% plot(BulkL, slprat (15, : ) )
-% plot(BulkL, slprat (20, : ))
-%%
-% figure(6)
-% hold on
-% plot(Bulkn(2: end) , slprat(:, find (BulkL==105)) , 'LineWidth',2)
-% plot(Bulkn (2: end) , slprat(:,find (BulkL==110)), 'LineWidth',2)
-% plot(Bulkn (2: end) , slprat(:,find (BulkL==115)), 'LineWidth',2)
-% plot(Bulkn(2: end) , slprat(:, find (BulkL==120)), 'LineWidth', 2)
-
-
-
-
-
-%%FEB1TEST
-
-
-
-
-
-
-
-
-
-
+figure(19)
+hold on
+plot(BulkL,slpratbulkB,'LineWidth',2)
+plot(BulkL,slpratB,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B) difference between SW and LED int')
+ylim([-0.85 -0.35])
+legend('LED Int','Single Wavelength')
