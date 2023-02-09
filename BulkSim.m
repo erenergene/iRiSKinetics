@@ -37,14 +37,12 @@ saveas(figure(1),[pwd '/Figures/BulkSim/1RatAir.fig']);
 
 %% Define n and L vars
 
-Z1_bulk = [];
-Refmat1_bulk = [];
-
 Bulkn = linspace(1.33,1.35,21); % Refractive index from n = 1.33 to 1.35
 BulkL = linspace(100,120,201); % Thickness from 100 nm to 120 nm
 
 %% Get reflectance matrices
-%% Get reflectance vals from n = 1.33 to 1.35 and silicon for red single wavelength
+
+%% Get reflectance vals: lambda = 400 - 700 nm, thickness = 100 - 120 nm, ref index = 1.33 - 1.35 
 
 %%
 % Refmat_lam_L_n_1 = []
@@ -56,42 +54,33 @@ BulkL = linspace(100,120,201); % Thickness from 100 nm to 120 nm
 %     for j = 1:numel(BulkL)
 %         for k = 1:numel(Bulkn)
 %             fprintf("Now running lambda %.0f thickness %.0f ref index %.0f\n",i,j,k)
-%             Refmat_lam_L_n_1(i,j,k) = multidiel1([Bulkn(k);n_SiO2(i,2);n_Si(i,2)],BulkL(j).*n_SiO2(i,2),lambda(i));
+%             [Refmat_lam_L_n_1(i,j,k),Z1_lam_L_n_1(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(i,2);n_Si(i,2)],BulkL(j).*n_SiO2(i,2),lambda(i));
 %         end
 %     end
 % end
 % 
 % toc
-
+%
 % Refmat_lam_L_n = conj(Refmat_lam_L_n_1).*Refmat_lam_L_n_1;
 
 load("Refmat_lam_L_n.mat") % For Faster Code
 
-%%
+%% Get reflectance vals: lambda = 460 nm (cw_b) & 633 nm (cw_r), thickness = 0 nm, ref index = 1.33 - 1.35 
+
+Refmat_lamR_L0_n = []
+Refmat_lamB_L0_n = []
 
 for i = 1
     for j = 1
         for k = 1:numel(Bulkn)
-            [Refmat1_lamR_L0_n(i,j,k),Z_lamR_L0_n_1(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
+            [Refmat1_lamR_L0_n(i,j,k),Z1_lamR_L0_n(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
+            [Refmat1_lamB_L0_n(i,j,k),Z1_lamB_L0_n(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_b),2);n_Si(find(lambda==cw_b),2)],0,cw_b); 
         end
     end
 end
 
 Refmat_lamR_L0_n = conj(Refmat1_lamR_L0_n).*Refmat1_lamR_L0_n;
-
-%%
-
-for i = 1
-    for j = 1
-        for k = 1:numel(Bulkn)
-            [Refmat1_lamB_L0_n(i,j,k),Z_lamB_L0_n_1(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_b),2);n_Si(find(lambda==cw_b),2)],0,cw_b); 
-        end
-    end
-end
-
 Refmat_lamB_L0_n = conj(Refmat1_lamB_L0_n).*Refmat1_lamB_L0_n;
-
-%% Get reflectance vals from n = 1.33 to 1.35 and thickness 100 120 nm for red led
 
 %% Display reflectance for 5 different thickness from 100 to 120 nm for red single wavelength lambda = 633 nm
 
@@ -108,9 +97,9 @@ legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Reflectance')
 xlim([1.33 1.35])
 title('Reflectance')
-saveas(figure(2),[pwd '/Figures/BulkSim/2Refvs5L.fig']);
+saveas(figure(2),[pwd '/Figures/BulkSim/2RefRvs5L.fig']);
 
-%% %% Display reflectance for 5 different thickness from 100 to 120 nm for blue single wavelength lambda = 460 nm
+%% Display reflectance for 5 different thickness from 100 to 120 nm for blue single wavelength lambda = 460 nm
 
 figure(3)
 hold on
@@ -124,31 +113,29 @@ legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Reflectance')
 xlim([1.33 1.35])
 title('Reflectance')
-saveas(figure(2),[pwd '/Figures/BulkSim/2Refvs5L.fig']);
+saveas(figure(3),[pwd '/Figures/BulkSim/3RefBvs5L.fig']);
 
-%%
+%% Get T0 and T1 - Reshape reflectance matrices
 
-%% Get T0-T1
-
-%%
 Refmat_lamR_L0_n = reshape(Refmat_lamR_L0_n,[21 1]); % Reflectance at silicon and red sw for n from 1.33 to 1.35
-Refmat_lamB_L0_n = reshape(Refmat_lamB_L0_n,[21 1]);
-%%
+Refmat_lamB_L0_n = reshape(Refmat_lamB_L0_n,[21 1]); % Reflectance at silicon and blue sw for n from 1.33 to 1.35
 Refmat_lamR_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_r),:,:),[201 21])'; % Reflectance at oxide and red sw for n 1.33 to 1.35
-Refmat_lamB_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_b),:,:),[201 21])'; % Reflectance at oxide and red sw for n 1.33 to 1.35
-%%
-subtrSiT1R = Refmat_lamR_L0_n - Refmat_lamR_L_n;
-addSiT1R = Refmat_lamR_L0_n + Refmat_lamR_L_n;
-ratSiT1R = subtrSiT1R ./ addSiT1R;
-%% 
-subtrSiT1B = Refmat_lamB_L0_n - Refmat_lamB_L_n;
-addSiT1B = Refmat_lamB_L0_n + Refmat_lamB_L_n;
-ratSiT1B = subtrSiT1B ./ addSiT1B;
+Refmat_lamB_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_b),:,:),[201 21])'; % Reflectance at oxide and blue sw for n 1.33 to 1.35
+
+%% Get ratio for red sw
+
+subtrSiT1R = Refmat_lamR_L0_n - Refmat_lamR_L_n; %T0 - T1
+addSiT1R = Refmat_lamR_L0_n + Refmat_lamR_L_n; % T0 + T1
+ratSiT1R = subtrSiT1R ./ addSiT1R; % (T0 - T1) / (T0 + T1)
+
+%% Get ratio for blue sw
+
+subtrSiT1B = Refmat_lamB_L0_n - Refmat_lamB_L_n; %T0 - T1
+addSiT1B = Refmat_lamB_L0_n + Refmat_lamB_L_n; % T0 + T1
+ratSiT1B = subtrSiT1B ./ addSiT1B; % (T0 - T1) / (T0 + T1)
 
 
-%% Display ratio R_Si - R_T1 / R_Si + R_T1 as a function of n from 1.33 to 1.35
-
-%%
+%% Display ratio (R_Si - R_T1) / (R_Si + R_T1) as a function of n from 1.33 to 1.35
 
 figure(4) 
 
@@ -162,7 +149,7 @@ legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
-
+saveas(figure(4),[pwd '/Figures/BulkSim/4RatSiT1R5Lvsn.fig']);
 %% 
 
 figure(5) 
@@ -177,9 +164,7 @@ legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
-
-
-
+saveas(figure(5),[pwd '/Figures/BulkSim/5RatSiT1B5Lvsn.fig']);
 
 %% Get and display slope of ratio for L from 100 to 120 nm
 
@@ -196,32 +181,24 @@ end
 figure(6)
 hold on
 plot(BulkL,slpratR,'LineWidth',2)
-xlabel('L (nm)'); ylabel('Slope of Ratio');
-xlim([100 120])
-ylim([-1.29 -1.22])
-title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
-
-
-figure(7)
-hold on
 plot(BulkL,slpratB,'LineWidth',2)
 xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
-ylim([-0.85 -0.35])
-title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
+saveas(figure(6),[pwd '/Figures/BulkSim/6SlpRatRBvsL.fig']);
 
+%% Code to visualize n in a broader range (n = 1 to 3)
 
-%% Code to test n in a broader range (1 to 3)
+%% Define broad n
 
-%%
 nbroad = linspace(1,3,201); 
+
+%% Get reflectance vals: lambda = 400 - 700 nm, thickness = 100 - 120 nm, ref index = 1 - 3
 
 
 for i = 1:numel(nbroad)
 [Refmat1_lamR_L0_nbroad(i),Z1(i)] = multidiel1([nbroad(i);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
 end
-
-% Calculates reflectance at Silicon (L = 0) as a function of refractive index (n from 1.33 to 1.35)
 
 Refmat_lamR_L0_nbroad = conj(Refmat1_lamR_L0_nbroad).*Refmat1_lamR_L0_nbroad;
 
