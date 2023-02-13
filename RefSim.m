@@ -84,23 +84,23 @@ saveas(figure(1),[pwd '/Figures/RefSim/1RefIndicesIntvsRaw.fig']);
 
 %% CALCULATE REFLECTANCE VALUES
 
-Z1_air = [];
-Refmat1_air = [];
-
-tic
-for i = 1:numel(lambda)
-fprintf("Now running %.0f\n",i)
-for j = 1:numel(L)
-[Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-[Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-end
-end
-toc
-%%
-Refmat_air = conj(Refmat1_air).*Refmat1_air;                
-Refmat_water = conj(Refmat1_water).*Refmat1_water;             %Multiply Gamma with conjugate to get rid of imaginary component
-Refmat_sol = conj(Refmat1_sol).*Refmat1_sol;
+% Z1_air = [];
+% Refmat1_air = [];
+% 
+% tic
+% for i = 1:numel(lambda)
+% fprintf("Now running %.0f\n",i)
+% for j = 1:numel(L)
+% [Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% [Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% [Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+% end
+% end
+% toc
+% %%
+% Refmat_air = conj(Refmat1_air).*Refmat1_air;                
+% Refmat_water = conj(Refmat1_water).*Refmat1_water;             %Multiply Gamma with conjugate to get rid of imaginary component
+% Refmat_sol = conj(Refmat1_sol).*Refmat1_sol;
 %%
 load('Refmat.mat') %For Faster Code
 
