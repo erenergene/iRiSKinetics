@@ -1,256 +1,240 @@
-%% WRITE DOWN PSEUDO CODE TOMORROW AT LAB NOTEBOOK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% TRY TO GET RESULTS OF REFLECTED INTENSITY TO WORK IN REFSIM.M, THEN TRY IN THICKNESS CALCULATION%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc; clearvars; close all;
-addpath(genpath(pwd))
+% clc;clear;close all;addpath(genpath(pwd))
 
-%% DEFINE WAVELENGTH AND THICKNESS
+load("SimOutputs/RefSimtoBulkData.mat") % Loads variables needed for simulations
 
-lambda = 400:0.1:700;                                   %Wavelength: 400-700 nm                          
-numval = numel(lambda);
-L = linspace(0,300,numval);                             %Thickness: 0-300 nm
+%% Get R_Si and R_T1 for air
 
-cw_b = 460;
-cw_g = 517;
-cw_r = 632.2;
+R_Si_air = Refmat_air(find(lambda==cw_r),find(L==0)); % Reflectance at Si at air (n = 1.33)
+R_T1_air = Refmat_air(find(lambda==cw_r),find(L==100):find(L==120)); % Reflectance at T1 = 100 nm to 120 nm oxide at air (n = 1.33)
 
-%% LOAD REFRACTIVE INDEX VALUES
+%% Get ratio R_Si - R_T1 / R_Si + R_T1
 
-n_Si_raw = load("Si.nnn");                              %Refractive index of Silicon 
-n_SiO2_raw = load("SiO2.nnn");                          %Refractive index of Silicon Oxide
+subtrair = R_Si_air - R_T1_air; % Subtract T1 oxide reflectance from Silicon reflectance
+addair = R_Si_air + R_T1_air; % Add T1 oxide reflectance and Silicon reflectance
+rat = subtrair ./ addair; % Ratio 
 
-r_Si_raw = load("Si.rrr");                              %Imaginary part of refractive index of Silicon 
-r_SiO2_raw = load("SiO2.rrr");                          %Imaginary part of refractive index of Silicon Oxide
-
-k_Si_raw = load("Si.kkk");                              %Extinction Coefficient of Silicon 
-k_SiO2_raw = load("SiO2.kkk");                          %Extinction Coefficient of Silicon Oxide
-
-n_Air_raw = load("Borzsonyi.csv");                      %Refractive index of Air
-n_Air_raw(:,1) = 1000.* n_Air_raw(:,1);               
-
-n_Water(:,1) = lambda;                                  %Refractive index for solution
-n_Water(:,2) = 1.33; 
-
-n_Sol(:,1) = lambda;                                    %Refractive index for solution
-n_Sol(:,2) = 1.34; 
-
-%% INTERPOLATE
-
-n_Si = [lambda;interp1(n_Si_raw(:,1),n_Si_raw(:,2),lambda)]';
-n_SiO2 = [lambda;interp1(n_SiO2_raw(:,1),n_SiO2_raw(:,2),lambda)]';
-n_Air = [lambda;interp1(n_Air_raw(:,1),n_Air_raw(:,2),lambda)]';
-
-%% PLOT INTERPOLATED AND ORIGINAL REFRACTIVE INDICES
+%% Display Ratio as a function of thickness
 
 figure(1)
+plot(linspace(100,120,201),rat,'LineWidth',2)
+xlabel('Thickness T1 (nm)'); ylabel('Ratio')
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (FOR AIR)')
+saveas(figure(1),[pwd '/Figures/BulkSimPast/1RatAir.fig']);
 
-subplot(2,2,1) %Refractive Index of Silicon
-hold on
-plot(n_Si_raw(:,1),n_Si_raw(:,2),"LineWidth",2,'color','b');
-plot(lambda,n_Si(:,2),"LineWidth",2,'color','r');
-xlabel("Wavelength (nm)")
-ylabel("Refractive Index")
-title("Si")
+%% Define n and L vars
 
-subplot(2,2,2) %Refractive index of Silicon Oxide
-hold on
-plot(n_SiO2_raw(1:58,1),n_SiO2_raw(1:58,2),"LineWidth",2,'color','b');
-plot(lambda,n_SiO2(:,2),"LineWidth",2,'color','r');
-xlabel("Wavelength (nm)")
-ylabel("Refractive Index")
-title("SiO2")
+Z1_bulk = [];
+Refmat1_bulk = [];
 
-subplot(2,2,3) %Refractive index of Air
-hold on
-plot(n_Air_raw(:,1),n_Air_raw(:,2),"LineWidth",2,'color','b');
-plot(lambda,n_Air(:,2),"LineWidth",2,'color','r');
-xlabel("Wavelength (nm)")
-ylabel("Refractive Index")
-title("Air")
+Bulkn = linspace(1.33,1.35,21); % Refractive index from n = 1.33 to 1.35
+BulkL = linspace(100,120,201); % Thickness from 100 nm to 120 nm
 
-subplot(2,2,4) %Interpolated values of refractive index from 400-700nm
-hold on
-plot(lambda,n_Si(:,2),"LineWidth",2,'color','b');
-plot(lambda,n_SiO2(:,2),"LineWidth",2,'color','r');
-plot(lambda,n_Air(:,2),"LineWidth",2,'color','g');
-xlabel("Wavelength (nm)")
-ylabel("Refractive Index")
-legend("Si","SiO2","Air")
-title('Si & SiO2 for 400-700 nm')
-ylim([0 6])
+%% Get reflectance matrices
+%% Get reflectance vals from n = 1.33 to 1.35 and silicon for red single wavelength
 
-sgtitle('Interpolated vs Raw Refractive Indices')
-saveas(figure(1),[pwd '/Figures/RefSim/1RefIndicesIntvsRaw.fig']);
-
-
-%% CALCULATE REFLECTANCE VALUES
-
-% Z1_air = [];
-% Refmat1_air = [];
+%%
+% Refmat_lam_L_n_1 = []
+% Z1_lam_L_n_1 = []
 % 
 % tic
+% 
 % for i = 1:numel(lambda)
-% fprintf("Now running %.0f\n",i)
-% for j = 1:numel(L)
-% [Refmat1_air(i,j),Z1(i,j)] = multidiel1([n_Air(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-% [Refmat1_water(i,j),Z1(i,j)] = multidiel1([n_Water(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
-% [Refmat1_sol(i,j),Z1(i,j)] = multidiel1([n_Sol(i,2);n_SiO2(i,2);n_Si(i,2)],L(j).*n_SiO2(i,2),lambda(i));
+%     for j = 1:numel(BulkL)
+%         for k = 1:numel(Bulkn)
+%             fprintf("Now running lambda %.0f thickness %.0f ref index %.0f\n",i,j,k)
+%             Refmat_lam_L_n_1(i,j,k) = multidiel1([Bulkn(k);n_SiO2(i,2);n_Si(i,2)],BulkL(j).*n_SiO2(i,2),lambda(i));
+%         end
+%     end
 % end
-% end
+% 
 % toc
-% %%
-% Refmat_air = conj(Refmat1_air).*Refmat1_air;                
-% Refmat_water = conj(Refmat1_water).*Refmat1_water;             %Multiply Gamma with conjugate to get rid of imaginary component
-% Refmat_sol = conj(Refmat1_sol).*Refmat1_sol;
-%%
-load('Refmat.mat') %For Faster Code
 
-%% DISPLAY REFLECTANCE MATRIX UNDER AIR (n=1)
+% Refmat_lam_L_n = conj(Refmat_lam_L_n_1).*Refmat_lam_L_n_1;
+
+load("Refmat_lam_L_n.mat") % For Faster Code
+
+%%
+
+for i = 1
+    for j = 1
+        for k = 1:numel(Bulkn)
+            [Refmat1_lamR_L0_n(i,j,k),Z_lamR_L0_n_1(i,j,k)] = multidiel1([Bulkn(k);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
+        end
+    end
+end
+
+Refmat_lamR_L0_n = conj(Refmat1_lamR_L0_n).*Refmat1_lamR_L0_n;
+
+%%
+
+
+
+%% Get reflectance vals from n = 1.33 to 1.35 and thickness 100 120 nm for red led
+
+%% Display reflectance for 5 different thickness from 100 to 120 nm for single wavelength lambda = 633 nm
+
 
 figure(2)
+hold on
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_r),find(BulkL==100),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_r),find(BulkL==105),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_r),find(BulkL==110),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_r),find(BulkL==115),:),[1 numel(Bulkn)]),'LineWidth',2)
+plot(Bulkn,reshape(Refmat_lam_L_n(find(lambda==cw_r),find(BulkL==120),:),[1 numel(Bulkn)]),'LineWidth',2)
 
-surf(L,lambda,Refmat_air,'EdgeColor','none');
-title('Si/SiO2 Reflectance Under Air')
-xlim([0 300])
-ylim([400 700])
-xlabel('L (\mum)');
-ylabel('Lambda (\mum)');
-zlabel('Reflectance');
-cb = colorbar;
-cb.Location = 'eastoutside';
-caxis([0 0.5])
-saveas(figure(2),[pwd '/Figures/RefSim/2RefMatrixAir.fig']);
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Reflectance')
+xlim([1.33 1.35])
+title('Reflectance')
+saveas(figure(2),[pwd '/Figures/BulkSimPast/2Refvs5L.fig']);
+%%
 
+%% Get T0-T1
 
-%% DISPLAY REFLECTANCE MATRIX UNDER WATER (n=1.33)
-
-figure(3)
-surf(L,lambda,Refmat_water,'EdgeColor','none');
-title('Si/SiO2 Reflectance Under Water')
-xlim([0 300])
-ylim([400 700])
-xlabel('L (\mum)');
-ylabel('Lambda (\mum)');
-zlabel('Reflectance');
-cb = colorbar;
-cb.Location = 'eastoutside';
-caxis([0 0.5])
-saveas(figure(3),[pwd '/Figures/RefSim/3RefMatrixWater.fig']);
+%%
+Refmat_lamR_L0_n = reshape(Refmat_lamR_L0_n,[21 1]); % Reflectance at silicon and red sw for n from 1.33 to 1.35
+%%
+Refmat_lamR_L_n = reshape(Refmat_lam_L_n(find(lambda == cw_r),:,:),[201 21])'; % Reflectance at oxide and red sw for n 1.33 to 1.35
+%%
+subtrSiT1 = Refmat_lamR_L0_n - Refmat_lamR_L_n;
+addSiT1 = Refmat_lamR_L0_n + Refmat_lamR_L_n;
+ratSiT1 = subtrSiT1 ./ addSiT1;
+%% 
 
 
-%% THICKNESS VS REFLECTANCE FOR RGB UNDER AIR (n=1)
+
+%% Display ratio R_Si - R_T1 / R_Si + R_T1 as a function of n from 1.33 to 1.35
+
+%%
+
+figure(3) 
+
+hold on
+plot(Bulkn,ratSiT1(:,find(BulkL==100)),'LineWidth',2)
+plot(Bulkn,ratSiT1(:,find(BulkL==105)),'LineWidth',2)
+plot(Bulkn,ratSiT1(:,find(BulkL==110)),'LineWidth',2)
+plot(Bulkn,ratSiT1(:,find(BulkL==115)),'LineWidth',2)
+plot(Bulkn,ratSiT1(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+xlim([1.33 1.35])
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
+saveas(figure(3),[pwd '/Figures/BulkSimPast/3RatBulk.fig']);
+
+
+%% Get and display slope of ratio for L from 100 to 120 nm
+
+for i = 1:numel(BulkL)
+    slprat(i) = (ratSiT1(end,i) - ratSiT1(1,i)) / (1.35-1.33); % Calculates slope of ratio R_Si - R_T1 / R_Si + R_T1
+end
+
+
+
+%% Display slope of ratio as a function of thickness
 
 figure(4)
 hold on
-plot(L,Refmat_air(find(lambda == cw_b),:),'b','LineWidth',2) %Reflectivity curve at 460 nm (blue)
-plot(L,Refmat_air(find(lambda == cw_g),:),'g','LineWidth',2) %Reflectivity curve at 530 nm (green)
-plot(L,Refmat_air(find(lambda == cw_r),:),'r','LineWidth',2) %Reflectivity curve at 625 nm (red)
-legend('Blue','Green','Red')
-title('RGB Light Reflectivity Under Air')
-xlabel('L (nm)','FontSize',16);
-ylabel('Reflectivity ','FontSize',16');
-saveas(figure(4),[pwd '/Figures/RefSim/4LvsRefAirRGB.fig']);
+plot(BulkL,slprat,'LineWidth',2)
+xlabel('L (nm)'); ylabel('Slope of Ratio');
+xlim([100 120])
+title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1)')
+saveas(figure(4),[pwd '/Figures/BulkSimPast/4SlpRat.fig']);
+
+%% Code to test n in a broader range (1 to 3)
+
+%%
+nbroad = linspace(1,3,201); 
 
 
-%% THICKNESS VS REFLECTANCE FOR RGB UNDER WATER (n=1.33)
+for i = 1:numel(nbroad)
+[Refmat1_lamR_L0_nbroad(i),Z1(i)] = multidiel1([nbroad(i);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],0,cw_r); 
+end
+
+% Calculates reflectance at Silicon (L = 0) as a function of refractive index (n from 1.33 to 1.35)
+
+Refmat_lamR_L0_nbroad = conj(Refmat1_lamR_L0_nbroad).*Refmat1_lamR_L0_nbroad;
+
+%% Get reflectance vals from n = 1.33 to 1.35 and thickness 100 120 nm for red led
+
+tic
+
+for i = 1:numel(nbroad)
+for j = 1:numel(BulkL)
+fprintf("Now running ref index %.0f\n",i)
+fprintf("Now running thickness %.0f\n",j)
+
+[Refmat1_lamR_L_nbroad(i,j),Z1(i,j)] = multidiel1([nbroad(i);n_SiO2(find(lambda==cw_r),2);n_Si(find(lambda==cw_r),2)],BulkL(j).*n_SiO2(find(lambda==cw_r),2),cw_r);        
+
+% Calculates reflectance as a function of thickness L from 100 to 120 nm and refractive index n from 1.33 to 1.35 
+
+end
+end
+
+toc
+
+Refmat_lamR_L_nbroad = conj(Refmat1_lamR_L_nbroad).*Refmat1_lamR_L_nbroad; %Refmat_Bulk(n,L) 
+
+Refmat_lamR_L_nbroad = Refmat_lamR_L_nbroad';
+subbulknbroad = Refmat_lamR_L0_nbroad - Refmat_lamR_L_nbroad; % Subtract T1 oxide reflectance from Silicon reflectance
+addbulknbroad = Refmat_lamR_L0_nbroad + Refmat_lamR_L_nbroad; % Add T1 oxide reflectance and Silicon reflectance
+ratbulknbroad = (subbulknbroad ./ addbulknbroad)'; % Ratio
+
+%%
 
 figure(5)
 hold on
-plot(L,Refmat_water(find(lambda == cw_b),:),'b','LineWidth',2) %Reflectivity curve at 460 nm (blue)
-plot(L,Refmat_water(find(lambda == cw_g),:),'g','LineWidth',2) %Reflectivity curve at 530 nm (green)
-plot(L,Refmat_water(find(lambda == cw_r),:),'r','LineWidth',2) %Reflectivity curve at 625 nm (red)
-legend('Blue','Green','Red')
-title('RGB Light Reflectivity Under Water')
-xlabel('L (nm)','FontSize',16);
-ylabel('Reflectivity ','FontSize',16');
-saveas(figure(5),[pwd '/Figures/RefSim/5LvsRefWaterRGB.fig']);
+plot(nbroad,ratbulknbroad(:,find(BulkL==100)),'LineWidth',2)
+plot(nbroad,ratbulknbroad(:,find(BulkL==105)),'LineWidth',2)
+plot(nbroad,ratbulknbroad(:,find(BulkL==110)),'LineWidth',2)
+plot(nbroad,ratbulknbroad(:,find(BulkL==115)),'LineWidth',2)
+plot(nbroad,ratbulknbroad(:,find(BulkL==120)),'LineWidth',2)
+legend('L=100','L=105','L=110','L=115','L=120')
+xlabel('ref index');ylabel('Ratio')
+title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
+saveas(figure(5),[pwd '/Figures/BulkSimPast/5RatBulktest.fig']);
 
+%% 
+%% LED Integrated Response
 
-%% THICKNESS VS REFLECTANCE FOR RGB UNDER SOLUTION (n=1.34)
-
-figure(6)
-hold on
-plot(L,Refmat_sol(find(lambda == cw_b),:),'b','LineWidth',2) %Reflectivity curve at 460 nm (blue)
-plot(L,Refmat_sol(find(lambda == cw_g),:),'g','LineWidth',2) %Reflectivity curve at 530 nm (green)
-plot(L,Refmat_sol(find(lambda == cw_r),:),'r','LineWidth',2) %Reflectivity curve at 625 nm (red)
-legend('Blue','Green','Red')
-title('RGB Light Reflectivity Under Solution')
-xlabel('L (nm)','FontSize',16);
-ylabel('Reflectivity ','FontSize',16');
-saveas(figure(6),[pwd '/Figures/RefSim/6LvsRefSolRGB.fig']);
-
-%% COMPARE THICKNESS VS REFLECTANCE UNDER WATER (n=1.33) AND SOLUTION (n=1.34)
-
-figure(7)
-hold on
-plot(L,Refmat_water(find(lambda == cw_b),:),'b','LineWidth',2) %Water under B
-plot(L,Refmat_sol(find(lambda == cw_b),:),'b--','LineWidth',2) %Solution under B
-plot(L,Refmat_water(find(lambda == cw_g),:),'g','LineWidth',2) %Water under G
-plot(L,Refmat_sol(find(lambda == cw_g),:),'g--','LineWidth',2) %Solution under G
-plot(L,Refmat_water(find(lambda == cw_r),:),'r','LineWidth',2) %Water under R
-plot(L,Refmat_sol(find(lambda == cw_r),:),'r--','LineWidth',2) %Solution under R
-legend("Water (n = 1.33)","Solution (n = 1.34)")
-title("Thickness vs Reflectance Curve for Water and Solution")
-xlabel('L (nm)','FontSize',16);
-ylabel('Reflectivity ','FontSize',16');
-saveas(figure(7),[pwd '/Figures/RefSim/7LvsRefWater&SolRGB.fig']);
-
-%% dR/dn AT 1.33-1.34 CHANGE IN REFLECTANCE AS n CHANGES FROM 1.33 TO 1.34 
-
-dRdn_B = Refmat_water(find(lambda == cw_b),:) - Refmat_sol(find(lambda == cw_b),:); 
-dRdn_G = Refmat_water(find(lambda == cw_g),:) - Refmat_sol(find(lambda == cw_g),:);
-dRdn_R = Refmat_water(find(lambda == cw_r),:) - Refmat_sol(find(lambda == cw_r),:);
-
-%% PLOT dR/dn (CHANGE IN REFLECTIVITY OVER AS n CHANGES FROM 1.33 TO 1.34)
-
-figure(8)
-hold on
-plot(L,dRdn_B,'b','LineWidth',2)
-plot(L,dRdn_G,'g','LineWidth',2)
-plot(L,dRdn_R,'r','LineWidth',2)
-xline(L(find(dRdn_R==min(dRdn_R))))
-title("Thickness vs Change in Reflectance for n = 1.33-1.34")
-xlabel('L (nm)','FontSize',16);
-ylabel('dR / dn ','FontSize',16');
-text(100,0.003,"Line = 108.6 nm")
-saveas(figure(8),[pwd '/Figures/RefSim/8LvsdRdnRGB.fig']);
-
-%% dR(t)/R (CHANGE IN REFLECTANCE AS THICKNESS CHANGES FROM 0 TO 300 nm)
-
-diffL = diff(Refmat_air,[],2); %Reflectance change as L increases from 0 to 300 nm
-
-dR_R_blue = diffL(lambda==cw_b,:); %Change in reflectance as L increases in blue
-dR_R_green = diffL(lambda==cw_g,:); %Change in reflectance as L increases in green
-dR_R_red = diffL(lambda==cw_r,:); %Change in reflectance as L increases in red
-
-%% PLOT dR(t)/R
-figure(9)
-hold on
-plot(L(2:end),dR_R_blue,'b','LineWidth',2) %blue
-plot(L(2:end),dR_R_green,'g','LineWidth',2) %green
-plot(L(2:end),dR_R_red,'r','LineWidth',2) %red
-xlabel("d (nm)")
-ylabel("Delta R(t) / R")
-xlim([100 150])
-title("Change in reflectance over change in thickness")
-saveas(figure(9),[pwd '/Figures/RefSim/9LvsdRRRGB.fig']);
-
-%% SPECTRUM DATA FOR RGB LEDS
-
-load("Osram_Spec_Data_edited.mat")
+load("Osram_Spec_Data_edited.mat") % get LEDs
 bluespectrum = Spec_DentalBlue_460nm; clear("Spec_DentalBlue_460nm")
 greenspectrum = Spec_Green_517nm; clear("Spec_Green_517nm")
 redspectrum = Spec_Red_633nm; clear("Spec_Red_633nm")
 
-
-%% INTERPOLATE SPECTRUM DATA
-
-intbluespectrum = interp1(Osram_lambda,bluespectrum,lambda); 
+intbluespectrum = interp1(Osram_lambda,bluespectrum,lambda); % Interpolate 
 intgreenspectrum = interp1(Osram_lambda,greenspectrum,lambda);
 intredspectrum = interp1(Osram_lambda,redspectrum,lambda);
 
+%%
+
+%% New reflectance calculation for LED integrated response
+
+tic
+
+for i = 1:numel(Bulkn)
+for j = 1:numel(lambda)
+fprintf("Now running ref index %.0f\n",i)
+fprintf("Now running lambda %.0f\n",j)
+
+[Refmat1_lam_L0_n(i,j),Z1(i,j)] = multidiel1([Bulkn(i);n_Si(j,2)],0,lambda(j));        
+
+% Calculates reflectance as a function of thickness L from 100 to 120 nm and refractive index n from 1.33 to 1.35 
+
+end
+end
+
+toc
+
+Refmat_lam_L0_n = conj(Refmat1_lam_L0_n).*Refmat1_lam_L0_n; %Refmat_Bulk(n,L) 
+
+
 %% PLOT INTERPOLATED RGB SPECTRUMS
 
-figure(10)
+figure(6)
 hold on
 plot(lambda,intbluespectrum,'b','LineWidth',2) 
 plot(lambda,intgreenspectrum,'g','LineWidth',2)
@@ -258,33 +242,51 @@ plot(lambda,intredspectrum,'r','LineWidth',2)
 xlabel('lambda (nm)')
 ylabel('Relative Intensity')
 title("RGB Spectrum Data")
-saveas(figure(10),[pwd '/Figures/RefSim/10RGBSpecData.fig']);
+saveas(figure(6),[pwd '/Figures/BulkSimPast/6RGBSpecData.fig']);
+
 %%
-refcurve0nm = Refmat_air(:,L==0); %Reflectivity curve at 0 nm (used below)
+Ref_spec_red_n1 = Refmat_air(:,find(L==0))'.*intredspectrum;
+Ref_spec_green_n1 = Refmat_air(:,find(L==0))'.*intgreenspectrum;
+Ref_spec_blue_n1 = Refmat_air(:,find(L==0))'.*intbluespectrum;
 %%
-for i = 1:numval
-Ref_spec_red = refcurve0nm(i)'.*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
-Ref_spec_green = refcurve0nm(i)'.*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
-Ref_spec_blue = refcurve0nm(i)'.*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
+for i = 1:size(Refmat_lam_L0_n,1)
+Ref_spec_red_bulk(i,:) = Refmat_lam_L0_n(i,:).*intredspectrum; %Reflectivity spectrum for red at 0 nm (R_r)
+Ref_spec_green_bulk(i,:) = Refmat_lam_L0_n(i,:).*intgreenspectrum; %Reflectivity spectrum for green at 0 nm (R_g)
+Ref_spec_blue_bulk(i,:) = Refmat_lam_L0_n(i,:).*intbluespectrum; %Reflectivity spectrum for blue at 0 nm (R_b)
 end
+%%
+refcurve_n1r = refcurve0nm
+refcurve_n133r = Refmat_lam_L0_n(find(Bulkn==1.33),:);
+refcurve_n135r = Refmat_lam_L0_n(find(Bulkn==1.35),:);
 
 %% Plot RGB reflectivity curves for Si chip with no oxide (SiO2 thickness = 0 nm)
-figure(11)
+figure(7)
 hold on
-plot(lambda,refcurve0nm,'k-','LineWidth',2) %Reflectivity curve at 0 nm
+
+plot(lambda,refcurve_n1r,'c','Linewidth',2);
+plot(lambda,refcurve_n133r,'k','Linewidth',2);
+plot(lambda,refcurve_n135r,'m','Linewidth',2);
 plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
-plot(lambda,intgreenspectrum,'g','Linewidth',2) %Green spectrum before multiplication
+plot(lambda,intgreenspectrum,'g','Linewidth',2) %Blue spectrum before multiplication
 plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
-plot(lambda,Ref_spec_red,'r','Linewidth',2) %Red spectrum after multiplication
-plot(lambda,Ref_spec_green,'g','Linewidth',2) %Green spectrum after multiplication
-plot(lambda,Ref_spec_blue,'b','Linewidth',2) %Blue spectrum after multiplication
+
+plot(lambda,Ref_spec_red_n1,'c','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_green_n1,'c','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_n1,'c','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(1,:),'k','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_green_bulk(1,:),'k','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(1,:),'k','Linewidth',2) %Blue spectrum after multiplication
+plot(lambda,Ref_spec_red_bulk(21,:),'m','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_green_bulk(21,:),'m','Linewidth',2) %Red spectrum after multiplication
+plot(lambda,Ref_spec_blue_bulk(21,:),'m','Linewidth',2) %Blue spectrum after multiplication
 xlim([400 700])
 ylim([0 1.3])
 xlabel('Wavelength (nm)')
 ylabel('Reflectivity')
 title('Reflectivity Curve for Silicon (no oxide)')
-legend('Reflectivity Curve for Silicon (0 nm)','Red Spectrum and I_O_u_t','Green Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
-saveas(figure(11),[pwd '/Figures/RefSim/11SiRef.fig']);
+legend('Reflectivity Curve for Silicon @ n = 1.33','Reflectivity Curve for Silicon @ n = 1.35','Red Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
+saveas(figure(7),[pwd '/Figures/BulkSimPast/7SiRef.fig']);
+%%
 
 %% Calculate total reflected intensity by multiplying reflectance with reflected intensity (I_Out)
 I_refred = []; %Reflected Intensity for red
@@ -292,9 +294,9 @@ I_refgreen = []; %Reflected Intensity for green
 I_refblue = []; %Reflected Intensity for blue
 for i=1:numval
    fprintf("Now running %.0f\n",i)
-   I_refred(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_red(2:end)');      
-   I_refgreen(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_green(2:end)');     
-   I_refblue(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_blue(2:end)');       
+   I_refred(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_red_n1(2:end)');      
+   I_refgreen(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_green_n1(2:end)');     
+   I_refblue(:,i) = sum(Refmat_air(2:end,i).*Ref_spec_blue_n1(2:end)');       
 end
 
 %% Plot total reflected intensity for RGB
@@ -525,6 +527,8 @@ end
 %%
 save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air','I_refred','I_refgreen','I_refblue')
 %%
-save("SimOutputs/RefSimData")
+save("SimOutputs/BulkSimPastLCalcData")
 %%
 fprintf("Done running %s\n", mfilename)
+
+

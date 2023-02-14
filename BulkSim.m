@@ -34,6 +34,7 @@ xlabel('Thickness T1 (nm)'); ylabel('Ratio')
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (FOR AIR)')
 legend('red','green','blue')
 saveas(figure(1),[pwd '/Figures/BulkSim/1RatAir.fig']);
+saveas(figure(1),[pwd '/Figures/BulkSimJpg/1RatAir.jpg']);
 
 
 %% Define n and L vars
@@ -99,6 +100,7 @@ xlabel('ref index');ylabel('Reflectance')
 xlim([1.33 1.35])
 title('Reflectance for Red SW')
 saveas(figure(2),[pwd '/Figures/BulkSim/2RefRvs5L.fig']);
+saveas(figure(2),[pwd '/Figures/BulkSimJpg/2RefRvs5L.jpg']);
 
 %% Display reflectance for 5 different thickness from 100 to 120 nm for blue single wavelength lambda = 460 nm
 
@@ -115,6 +117,7 @@ xlabel('ref index');ylabel('Reflectance')
 xlim([1.33 1.35])
 title('Reflectance for Blue SW')
 saveas(figure(3),[pwd '/Figures/BulkSim/3RefBvs5L.fig']);
+saveas(figure(3),[pwd '/Figures/BulkSimJpg/3RefBvs5L.jpg']);
 
 %% Get T0 and T1 - %% Reconstruct data for easier calculation
 
@@ -147,10 +150,11 @@ plot(Bulkn,ratSiT1R(:,find(BulkL==110)),'LineWidth',2)
 plot(Bulkn,ratSiT1R(:,find(BulkL==115)),'LineWidth',2)
 plot(Bulkn,ratSiT1R(:,find(BulkL==120)),'LineWidth',2)
 legend('L=100','L=105','L=110','L=115','L=120')
-xlabel('ref index');ylabel('Ratio')
+xlabel('ref index');ylabel('Ratio') 
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
 saveas(figure(4),[pwd '/Figures/BulkSim/4RatswR5Lvsn.fig']);
+saveas(figure(4),[pwd '/Figures/BulkSimJpg/4RatswR5Lvsn.jpg']);
 %% 
 
 figure(5) 
@@ -166,6 +170,7 @@ xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
 saveas(figure(5),[pwd '/Figures/BulkSim/5RatswB5Lvsn.fig']);
+saveas(figure(5),[pwd '/Figures/BulkSimJpg/5RatswB5Lvsn.jpg']);
 
 %% Get and display slope of ratio for L from 100 to 120 nm
 
@@ -186,6 +191,8 @@ xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
 title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
 saveas(figure(6),[pwd '/Figures/BulkSim/6SlpRatswRvsL.fig']);
+saveas(figure(6),[pwd '/Figures/BulkSimJpg/6SlpRatswRvsL.jpg']);
+
 
 %% Display slope of ratio as a function of thickness for blue single wavelength
 
@@ -196,6 +203,7 @@ xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
 title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
 saveas(figure(7),[pwd '/Figures/BulkSim/7SlpRatswBvsL.fig']);
+saveas(figure(7),[pwd '/Figures/BulkSimJpg/7SlpRatswBvsL.jpg']);
 
 %% Code to visualize n in a broader range (n = 1 to 3)
 
@@ -242,6 +250,7 @@ legend('L=100','L=105','L=110','L=115','L=120')
 xlabel('ref index');ylabel('Ratio')
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1)')
 saveas(figure(8),[pwd '/Figures/BulkSim/8Ratbroadntest.fig']);
+saveas(figure(8),[pwd '/Figures/BulkSimJpg/8Ratbroadntest.jpg']);
 
 %% LED Integrated Response
 
@@ -286,6 +295,7 @@ xlabel('lambda (nm)')
 ylabel('Relative Intensity')
 title("RGB Spectrum Data")
 saveas(figure(9),[pwd '/Figures/BulkSim/9RGBSpecData.fig']);
+saveas(figure(9),[pwd '/Figures/BulkSimJpg/9RGBSpecData.jpg']);
 
 %% Get reflectance curve at Silicon
 
@@ -319,7 +329,7 @@ figure(10)
 hold on
 
 plot(lambda,refcurve0nm_bulk(:,find(Bulkn==1.33)),'k','Linewidth',2); %Reflectivity curve at silicon at n = 1.33
-plot(lambda,refcurve0nm_bulk(:,find(Bulkn==1.35)),'k','Linewidth',2); %Reflectivity curve at silicon at n = 1.35
+plot(lambda,refcurve0nm_bulk(:,find(Bulkn==1.35)),'m','Linewidth',2); %Reflectivity curve at silicon at n = 1.35
 plot(lambda,intredspectrum,'r','Linewidth',2) %Red spectrum before multiplication
 plot(lambda,intbluespectrum,'b','Linewidth',2) %Blue spectrum before multiplication
 plot(lambda,Ref_spec_red_bulk(find(Bulkn==1.33),:),'r','Linewidth',2) %Red spectrum after multiplication
@@ -333,6 +343,7 @@ ylabel('Reflectivity')
 title('Reflectivity Curve for Silicon (no oxide)')
 legend('Reflectivity Curve for Silicon @ n = 1.33','Reflectivity Curve for Silicon @ n = 1.35','Red Spectrum and I_O_u_t','Blue Spectrum and I_O_u_t','location','northeast')
 saveas(figure(10),[pwd '/Figures/BulkSim/10RefSpecL02nvslambda.fig']);
+saveas(figure(10),[pwd '/Figures/BulkSimJpg/10RefSpecL02nvslambda.jpg']);
 
 %% Calculate reflected intensity for L = 0 and L = 100 - 120 and n = 1.33 -1.35
 
@@ -373,6 +384,7 @@ legend('n = 1.33','n = 1.33','n = 1.34','n = 1.34','n = 1.35','n = 1.35')
 xlabel('L (\mum)','FontSize',16);
 ylabel('Reflected Intensity (I_O_u_t)','FontSize',16);
 saveas(figure(11),[pwd '/Figures/BulkSim/11RefIntRB3nvsL.fig']);
+saveas(figure(11),[pwd '/Figures/BulkSimJpg/11RefIntRB3nvsL.jpg']);
 
 %% Reconstruct data for easier plot
 
@@ -393,6 +405,7 @@ xlim([1.33 1.35])
 legend('L=100','L=105','L=110','L=115','L=120')
 title("Reflected Intensity for red")
 saveas(figure(12),[pwd '/Figures/BulkSim/12RefIntR5Lvsn.fig']);
+saveas(figure(12),[pwd '/Figures/BulkSimJpg/12RefIntR5Lvsn.jpg']);
 
 %% Plot reflected intensity for 5 thicknesses as a function of n for blue
 
@@ -407,6 +420,7 @@ xlim([1.33 1.35])
 legend('L=100','L=105','L=110','L=115','L=120')
 title("Reflected Intensity for blue")
 saveas(figure(13),[pwd '/Figures/BulkSim/13RefIntB5Lvsn.fig']);
+saveas(figure(13),[pwd '/Figures/BulkSimJpg/13RefIntB5Lvsn.jpg']);
 
 
 
@@ -437,6 +451,7 @@ xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
 saveas(figure(14),[pwd '/Figures/BulkSim/14RatIntR5Lvsn.fig']);
+saveas(figure(14),[pwd '/Figures/BulkSimJpg/14RatIntR5Lvsn.jpg']);
 
 %% Plot ratio for blue LED int 
 
@@ -453,6 +468,7 @@ xlabel('ref index');ylabel('Ratio')
 xlim([1.33 1.35])
 title ('(R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
 saveas(figure(15),[pwd '/Figures/BulkSim/15RatIntB5Lvsn.fig']);
+saveas(figure(15),[pwd '/Figures/BulkSimJpg/15RatIntB5Lvsn.jpg']);
 
 %% Get slope of ratio for L from 100 to 120 nm
 
@@ -472,6 +488,7 @@ xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
 title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R)')
 saveas(figure(16),[pwd '/Figures/BulkSim/16SlpRatIntRBvsL.fig']);
+saveas(figure(16),[pwd '/Figures/BulkSimJpg/16SlpRatIntRBvsL.jpg']);
 
 %% Display slope of ratio as a function of thickness for red LED integrated response
 
@@ -482,6 +499,7 @@ xlabel('L (nm)'); ylabel('Slope of Ratio');
 xlim([100 120])
 title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B)')
 saveas(figure(17),[pwd '/Figures/BulkSim/17SlpRatIntBvsL.fig']);
+saveas(figure(17),[pwd '/Figures/BulkSimJpg/17SlpRatIntBvsL.jpg']);
 
 %% Graph to compare single wavelength and LED integrated response for red
 
@@ -495,6 +513,7 @@ title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (R) difference between 
 ylim([-1.29 -1.22])
 legend('LED Int','Single Wavelength')
 saveas(figure(18),[pwd '/Figures/BulkSim/18SlpRatInt&swRvsL.fig']);
+saveas(figure(18),[pwd '/Figures/BulkSimJpg/18SlpRatInt&swRvsL.jpg']);
 %% Graph to compare single wavelength and LED integrated response for red
 
 figure(19)
@@ -506,14 +525,10 @@ xlim([100 120])
 title ('Slope of ratio (R_S_i - R_T_1) / (R_S_i + R_T_1) (B) difference between SW and LED int')
 ylim([-0.85 -0.35])
 legend('LED Int','Single Wavelength')
-saveas(figure(19),[pwd '/Figures/BulkSim/19SlpRatInt&swBvsL']);
+saveas(figure(19),[pwd '/Figures/BulkSim/19SlpRatInt&swBvsL.fig']);
+saveas(figure(19),[pwd '/Figures/BulkSimJpg/19SlpRatInt&swBvsL.jpg']);
+
 
 %%
-
-[figures, pathname,]=uigetfile([pwd '/Figures'],'*.fig','Multiselect','on');
-%%
-for x = 1:length(figures)
-   jpgfilenames(x) = strcat(extractBefore(figures{x},'.fig'),'.jpg');
-   saveas(figs(x), strcat(pathname,jpgfilenames));
-end
-%%
+% 
+[figures, pathname,]=uigetfile([pwd '/Figures'],'*.jpg','Multiselect','on');
