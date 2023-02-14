@@ -527,7 +527,7 @@ end
 %%
 save("SimOutputs/RefSimtoBulkData.mat",'lambda','L','cw_r','n_SiO2','n_Si','Refmat_air','I_refred','I_refgreen','I_refblue')
 %%
-save("SimOutputs/BulkSimPastLCalcData")
+save("SimOutputs/BulkSimPastLCalcData.mat")
 %%
 fprintf("Done running %s\n", mfilename)
 
